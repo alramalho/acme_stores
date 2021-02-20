@@ -1,0 +1,13 @@
+version: "3.6"
+services:
+  api:
+    build: ./backend
+    ports:
+    - "7000:7000"
+  web:
+    build: ./frontend
+    ports:
+      - "8080:8080"
+
+
+
