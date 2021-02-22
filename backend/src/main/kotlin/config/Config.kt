@@ -9,7 +9,7 @@ object Config {
     val repository by lazy {
         PostgreRepository(
             Database.connect(url = "jdbc:postgresql://localhost:5432/", user = "admin", password = "admin")
-        )
+        ).also(PostgreRepository::updateSchema)
     }
 
     val storesGateway by lazy {

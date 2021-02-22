@@ -10,7 +10,7 @@ repositories {
     jcenter()
 }
 
-val exposedVersion="0.29.1"
+val exposedVersion = "0.29.1"
 dependencies {
     implementation(kotlin("stdlib"))
 
@@ -19,14 +19,17 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-java-time:$exposedVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.+")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.+")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.1")
+    implementation("ru.yandex.qatools.embed:postgresql-embedded:2.10")
+//    implementation("de.flapdoodle.embed:de.flapdoodle.embed.process:2.0.5")
+    implementation("com.impossibl.pgjdbc-ng:pgjdbc-ng:0.8.6")
 
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.+")
     testImplementation("io.mockk:mockk:1.+")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.0")
-//    implementation("com.impossibl.pgjdbc-ng:pgjdbc-ng:LATEST")
 }
 tasks {
     test {

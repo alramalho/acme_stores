@@ -3,3 +3,5 @@
 
 backend/build
 backend/.gradle
+backend/V9_6
+backend/V9_6/**
