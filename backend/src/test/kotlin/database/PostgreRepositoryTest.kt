@@ -19,11 +19,11 @@ class PostgreRepositoryTest {
     @Suppress("unused")
     fun setup() {
         db = EmbeddedPostgres("V9_6");
-        db.start("localhost", 1234, "db", "user", "pass");
+        db.start("localhost", 3301, "db", "user", "pass");
         repo = PostgreRepository(
             Database.connect(
-//                url = "jdbc:postgresql://user:pass@localhost:1234/db",
-                url = "jdbc:pgsql://localhost:1234/db",
+//                url = "jdbc:postgresql://user:pass@localhost:3301/db",
+                url = "jdbc:pgsql://localhost:3301/db",
                 user = "user",
                 password = "pass",
             )
@@ -37,8 +37,8 @@ class PostgreRepositoryTest {
     }
 
     @Test
-    fun `should import a list of stores into the database`() {
-        val stores = listOf(
+    fun `should import a list of duplicate stores into the database`() {
+        val stores: List<Store> = listOf(
             Store(
                 id = 1,
                 code = "dummy-code-1",
@@ -53,7 +53,14 @@ class PostgreRepositoryTest {
             ),
         )
 
-        repo.importStores(stores)
+        repo.importStores(
+            stores.plus(
+                Store(
+                    id = 2,
+                    name = "Store 2",
+                ),
+            )
+        )
 
         assertEquals(stores, repo.getStores())
     }
