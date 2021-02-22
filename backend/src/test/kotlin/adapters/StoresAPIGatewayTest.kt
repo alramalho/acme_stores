@@ -36,11 +36,25 @@ class StoresAPIGatewayTest {
                         ),
                         mapOf(
                             "id" to 2,
-                            "code" to "dummy-code-2",
+                            "code" to null,
                             "name" to "Store 2",
-                            "description" to "descr-2",
-                            "openingDate" to "2021-02-08",
-                            "storeType" to "RETAIL",
+                            "description" to null,
+                            "openingDate" to null,
+                            "storeType" to null,
+                        ),
+                        mapOf(
+                            "id" to 3,
+                            "name" to "Store 3",
+                        ),
+                        mapOf(
+                            "id" to 4,
+                            "trol" to "trol",
+                        ),
+                        mapOf(
+                            "id" to 5,
+                        ),
+                        mapOf(
+                            "name" to "Store 6",
                         ),
                     )
                 )
@@ -57,11 +71,11 @@ class StoresAPIGatewayTest {
             ),
             Store(
                 id = 2,
-                code = "dummy-code-2",
-                description = "descr-2",
                 name = "Store 2",
-                openingDate = LocalDate.of(2021, 2, 8),
-                storeType = "RETAIL"
+            ),
+            Store(
+                id = 3,
+                name = "Store 3",
             )
         )
 
@@ -96,13 +110,21 @@ class StoresAPIGatewayTest {
                         mapOf(
                             "season" to "lololol",
                         ),
+                        mapOf(
+                            "storeId" to 7,
+                            "season" to null,
+                        ),
+                        mapOf(
+                            "storeId" to null,
+                            "season" to "H1 23",
+                        ),
                     )
                 )
                 apiKeyHeader = it.header("apiKey")
             }
         val expectedStoresAndSeasons = mapOf(
-            1 to Season(SeasonHalf.H1, Year.of(2021)),
-            2 to Season(SeasonHalf.H2, Year.of(2022))
+            1.toLong() to Season(SeasonHalf.H1, Year.of(2021)),
+            2.toLong() to Season(SeasonHalf.H2, Year.of(2022))
         )
 
         val storesAndSeasons = gateway.getStoresAndSeasons()
