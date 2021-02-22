@@ -4,8 +4,6 @@ import entities.Season
 import entities.SeasonHalf
 import entities.Store
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres
@@ -46,7 +44,7 @@ class PostgreRepositoryTest {
     }
 
     @Test
-    fun `should successfully import a list of duplicate stores into the database`() {
+    fun `should successfully import and return a list of stores into the database`() {
         val stores: List<Store> = listOf(
             Store(
                 id = 1,
@@ -62,40 +60,66 @@ class PostgreRepositoryTest {
             ),
         )
 
-        repo.importStores(
-            stores.plus(
-                Store(
-                    id = 2,
-                    name = "Store 2",
-                ),
-            )
-        )
+        repo.importStores(stores)
 
         assertEquals(stores, repo.getStores())
     }
 
     @Test
-    fun `should successfully import a list of duplicate seasons into the database`() {
+    fun `should successfully update a list of stores into the database`() {
         val conn = DriverManager.getConnection("jdbc:pgsql://user:pass@localhost:3301/db")
-        val seasons: List<Season> = listOf(
-            Season(
-                half = SeasonHalf.H1,
-                year = Year.of(2021)
-            ),
-            Season(
-                half = SeasonHalf.H2,
-                year = Year.of(2021)
-            ),
-        )
+        conn.createStatement().execute("INSERT INTO store(id, name) VALUES (1, 'Store 1');")
 
-        repo.importSeasons(
-            seasons.plus(
-                Season(
-                    half = SeasonHalf.H2,
-                    year = Year.of(2021)
-                )
+        val stores: List<Store> = listOf(
+            Store(
+                id = 1,
+                code = "dummy-code-1",
+                description = "descr-1",
+                name = "Store 1",
+                openingDate = LocalDate.of(2021, 2, 7),
+                storeType = "STORE FRONT"
             )
         )
+
+        repo.updateStores(stores)
+
+        assertEquals(stores, repo.getStores())
+    }
+
+    @Test
+    fun `should successfully import and return a list of seasons into the database`() {
+        val seasons: List<Season> = listOf(
+            Season(SeasonHalf.H1, Year.of(2021)),
+            Season(SeasonHalf.H2, Year.of(2021)),
+        )
+        repo.importSeasons(seasons)
         assertEquals(seasons, repo.getSeasons())
     }
+
+    @Test
+    fun `should successfully update a list of seasons into the database`() {
+        val conn = DriverManager.getConnection("jdbc:pgsql://user:pass@localhost:3301/db")
+        conn.createStatement().execute("INSERT INTO season(half, year) VALUES ('H1', 2021);")
+        val season: List<Season> = listOf(Season(SeasonHalf.H1, Year.of(2021)))
+
+        repo.updateSeasons(season)
+
+        assertEquals(season, repo.getSeasons())
+    }
+
+    @Test
+    fun `should successfully import and return stores and seasons relationship`() {
+        val conn = DriverManager.getConnection("jdbc:pgsql://user:pass@localhost:3301/db")
+        conn.createStatement().execute("INSERT INTO store(id, name) VALUES (1, 'Store 1');")
+        conn.createStatement().execute("INSERT INTO store(id, name) VALUES (2, 'Store 2');")
+        conn.createStatement().execute("INSERT INTO season(half, year) VALUES ('H1', 2021);")
+        conn.createStatement().execute("INSERT INTO season(half, year) VALUES ('H2', 2022);")
+        val storeSeasons = mapOf(
+            1.toLong() to Season(SeasonHalf.H1, Year.of(2021)),
+            2.toLong() to Season(SeasonHalf.H2, Year.of(2022)),
+        )
+        repo.importStoreSeasons(storeSeasons)
+        assertEquals(storeSeasons, repo.getStoreSeasons())
+    }
+
 }

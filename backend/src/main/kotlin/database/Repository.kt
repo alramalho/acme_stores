@@ -6,12 +6,14 @@ import entities.Store
 interface Repository {
     fun importStores(stores: List<Store>)
     fun getStores(): List<Store>
+    fun updateStores(stores: List<Store>)
 
     fun importSeasons(seasons: List<Season>)
     fun getSeasons(): List<Season>
+    fun updateSeasons(seasons: List<Season>)
 
     fun importStoreSeasons(map: Map<Long, Season>)
-    fun getStoreSeasons(): Map<Store, Season>
+    fun getStoreSeasons(): Map<Long, Season>
 
     fun deleteAll()
 }

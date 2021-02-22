@@ -14,10 +14,10 @@ The frontend app will be accessible through `localhost:8080` and the backend app
 
 ### Design decisions
 - No "hard" documentation
-  - Tests are documentation, documentation is one more thing that
-    can get outdated and needs active effort to be maitained. If testes are
+  - Tests should be the only documentation, "hard" documentation is one more thing that
+    can get outdated and needs active effort to be kept up to date. If testes are
     rightly written in a behaviour driven way, they will serve as documentation,
-    giving live working examples of the code, while still explaining them.
+    giving live working examples of the code, while explaining them.
 - Relational database as PostgreSQL
     - I kinda of feel this is an overkill, and thought about going with some simpler solutions,
       such as JSON. Although, since I know it is used in the project I'm applying for, and since I
@@ -30,3 +30,4 @@ The frontend app will be accessible through `localhost:8080` and the backend app
 - Use yarn instead of npm in docker compose, faster boot times
 - Silence warnings when running backend
 - Use Enum for season half instead of varchar in DB
+- Do not hardcode SQL code (to use FK of stores_seasons table). Related to [this issue](https://github.com/JetBrains/Exposed/issues/511)
