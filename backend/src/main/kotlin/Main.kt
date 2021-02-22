@@ -23,7 +23,7 @@ class WebApp(
         .get("/") { ctx ->
             ctx.result("Hello!")
         }
-//        .get("/import", ImportHandler(storesGateway, repo))
+        .get("/import", ImportHandler(storesGateway, repo))
 
     fun start() {
         app.start(port)
