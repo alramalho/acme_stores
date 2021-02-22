@@ -10,5 +10,8 @@ interface Repository {
     fun importSeasons(seasons: List<Season>)
     fun getSeasons(): List<Season>
 
+    fun importStoreSeasons(map: Map<Long, Season>)
     fun getStoreSeasons(): Map<Store, Season>
+
+    fun deleteAll()
 }

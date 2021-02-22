@@ -29,3 +29,4 @@ The frontend app will be accessible through `localhost:8080` and the backend app
 
 - Use yarn instead of npm in docker compose, faster boot times
 - Silence warnings when running backend
+- Use Enum for season half instead of varchar in DB

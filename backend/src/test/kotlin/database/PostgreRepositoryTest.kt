@@ -1,33 +1,42 @@
 package database
 
+import entities.Season
+import entities.SeasonHalf
 import entities.Store
 import org.jetbrains.exposed.sql.Database
-import org.junit.jupiter.api.AfterAll
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres
+import java.sql.DriverManager
 import java.time.LocalDate
+import java.time.Year
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PostgreRepositoryTest {
     private lateinit var db: EmbeddedPostgres
     private lateinit var repo: PostgreRepository
+    private lateinit var conn: Database
 
     @BeforeAll
     @Suppress("unused")
     fun setup() {
         db = EmbeddedPostgres("V9_6");
         db.start("localhost", 3301, "db", "user", "pass");
+        conn = Database.connect(
+            url = "jdbc:pgsql://localhost:3301/db",
+            user = "user",
+            password = "pass",
+        )
         repo = PostgreRepository(
-            Database.connect(
-//                url = "jdbc:postgresql://user:pass@localhost:3301/db",
-                url = "jdbc:pgsql://localhost:3301/db",
-                user = "user",
-                password = "pass",
-            )
+            conn
         ).also { it.updateSchema() }
+    }
+
+    @BeforeEach
+    fun `before each`() {
+        repo.deleteAll()
     }
 
     @AfterAll
@@ -37,7 +46,7 @@ class PostgreRepositoryTest {
     }
 
     @Test
-    fun `should import a list of duplicate stores into the database`() {
+    fun `should successfully import a list of duplicate stores into the database`() {
         val stores: List<Store> = listOf(
             Store(
                 id = 1,
@@ -63,5 +72,30 @@ class PostgreRepositoryTest {
         )
 
         assertEquals(stores, repo.getStores())
+    }
+
+    @Test
+    fun `should successfully import a list of duplicate seasons into the database`() {
+        val conn = DriverManager.getConnection("jdbc:pgsql://user:pass@localhost:3301/db")
+        val seasons: List<Season> = listOf(
+            Season(
+                half = SeasonHalf.H1,
+                year = Year.of(2021)
+            ),
+            Season(
+                half = SeasonHalf.H2,
+                year = Year.of(2021)
+            ),
+        )
+
+        repo.importSeasons(
+            seasons.plus(
+                Season(
+                    half = SeasonHalf.H2,
+                    year = Year.of(2021)
+                )
+            )
+        )
+        assertEquals(seasons, repo.getSeasons())
     }
 }
