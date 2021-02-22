@@ -122,9 +122,9 @@ class StoresAPIGatewayTest {
                 )
                 apiKeyHeader = it.header("apiKey")
             }
-        val expectedStoresAndSeasons = mapOf(
-            1.toLong() to Season(SeasonHalf.H1, Year.of(2021)),
-            2.toLong() to Season(SeasonHalf.H2, Year.of(2022))
+        val expectedStoresAndSeasons = listOf(
+            Pair(1.toLong(), Season(SeasonHalf.H1, Year.of(2021))),
+            Pair(2.toLong(), Season(SeasonHalf.H2, Year.of(2022)))
         )
 
         val storesAndSeasons = gateway.getStoresAndSeasons()

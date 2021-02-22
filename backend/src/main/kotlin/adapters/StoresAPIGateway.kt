@@ -27,7 +27,7 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
         }
     }
 
-    override fun getStoresAndSeasons(): Map<Long, Season> {
+    override fun getStoresAndSeasons(): List<Pair<Long, Season>> {
         val request = newBuilder().GET()
             .uri(URI("$apiUrl/other/stores_and_seasons"))
             .header("apiKey", apiKey)
@@ -48,11 +48,11 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
                 list.add(
                     Store(
                         id = store.get("id").asLong(),
-                        code = store.get("code").toTextOrNull(),
-                        description = store.get("description").toTextOrNull(),
+                        code = store.get("code")?.toTextOrNull(),
+                        description = store.get("description")?.toTextOrNull(),
                         name = store.get("name").asText(),
-                        openingDate = store.get("openingDate").toDateOrNull(),
-                        storeType = store.get("storeType").toTextOrNull(),
+                        openingDate = store.get("openingDate")?.toDateOrNull(),
+                        storeType = store.get("storeType")?.toTextOrNull(),
                     )
                 )
             } catch (e: Exception) {
@@ -80,8 +80,8 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
         }
     }
 
-    private fun JsonNode.toStoresAndSeasons(): Map<Long, Season> {
-        val map = mutableMapOf<Long, Season>()
+    private fun JsonNode.toStoresAndSeasons(): List<Pair<Long, Season>> {
+        val list = mutableListOf<Pair<Long, Season>>()
         for (store in this) {
             try {
                 require(store.get("storeId") !== null) { throw Exception() }
@@ -89,11 +89,11 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
                 require(store.get("season") !== null) { throw Exception() }
                 require(!store.get("season").isNull) { throw Exception() }
 
-                map[store.get("storeId").asLong()] = store.get("season").asText().toSeason()
+                list.add(Pair(store.get("storeId").asLong(), store.get("season").asText().toSeason()))
             } catch (e: Exception) {
                 continue
             }
         }
-        return map
+        return list
     }
 }

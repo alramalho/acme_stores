@@ -45,19 +45,6 @@ class PostgreRepository(private val database: Database) : Repository {
         }
     }
 
-    fun getStore() = transaction(database) {
-        StoreSchema.selectAll().map {
-            Store(
-                id = it[StoreSchema.id],
-                code = it[StoreSchema.code],
-                description = it[StoreSchema.description],
-                name = it[StoreSchema.name],
-                openingDate = it[StoreSchema.openingDate],
-                storeType = it[StoreSchema.storeType],
-            )
-        }
-    }
-
     override fun getStores() = transaction(database) {
         StoreSchema.selectAll().map {
             Store(
