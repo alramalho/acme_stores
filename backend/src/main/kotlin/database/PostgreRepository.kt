@@ -28,7 +28,7 @@ class PostgreRepository(private val database: Database) : Repository {
     }
 
     private object StoreSeasonSchema : Table("stores_seasons") {
-        val storeId = long("storeId") references StoreSchema.id
+        val storeId = long("storeId").references(StoreSchema.id, onDelete = ReferenceOption.CASCADE)
         val half = varchar("half", 2)
         val year = integer("year")
 
@@ -44,19 +44,19 @@ class PostgreRepository(private val database: Database) : Repository {
             this[StoreSchema.storeType] = store.storeType
         }
     }
-//
-//    fun getStore() = transaction(database) {
-//        StoreSchema.selectAll().map {
-//            Store(
-//                id = it[StoreSchema.id],
-//                code = it[StoreSchema.code],
-//                description = it[StoreSchema.description],
-//                name = it[StoreSchema.name],
-//                openingDate = it[StoreSchema.openingDate],
-//                storeType = it[StoreSchema.storeType],
-//            )
-//        }
-//    }
+
+    fun getStore() = transaction(database) {
+        StoreSchema.selectAll().map {
+            Store(
+                id = it[StoreSchema.id],
+                code = it[StoreSchema.code],
+                description = it[StoreSchema.description],
+                name = it[StoreSchema.name],
+                openingDate = it[StoreSchema.openingDate],
+                storeType = it[StoreSchema.storeType],
+            )
+        }
+    }
 
     override fun getStores() = transaction(database) {
         StoreSchema.selectAll().map {
@@ -109,8 +109,8 @@ class PostgreRepository(private val database: Database) : Repository {
         }
     }
 
-    override fun importStoreSeasons(map: Map<Long, Season>): Unit = transaction(database) {
-        for((id, season) in map) {
+    override fun importStoreSeasons(map: List<Pair<Long, Season>>): Unit = transaction(database) {
+        for ((id, season) in map) {
             StoreSeasonSchema.insert {
                 it[storeId] = id
                 it[half] = season.half.toString()
@@ -119,14 +119,16 @@ class PostgreRepository(private val database: Database) : Repository {
         }
     }
 
-    override fun getStoreSeasons(): Map<Long, Season> = transaction(database) {
-        val result = mutableMapOf<Long, Season>()
-        StoreSeasonSchema.selectAll().map{
-            result.put(
-                it[StoreSeasonSchema.storeId],
-                Season(
-                    half = it[StoreSeasonSchema.half].toSeasonHalf(),
-                    year = Year.of(it[StoreSeasonSchema.year])
+    override fun getStoreSeasons(): List<Pair<Long, Season>> = transaction(database) {
+        val result = mutableListOf<Pair<Long, Season>>()
+        StoreSeasonSchema.selectAll().map {
+            result.add(
+                Pair(
+                    it[StoreSeasonSchema.storeId],
+                    Season(
+                        half = it[StoreSeasonSchema.half].toSeasonHalf(),
+                        year = Year.of(it[StoreSeasonSchema.year])
+                    )
                 )
             )
         }
@@ -143,8 +145,10 @@ class PostgreRepository(private val database: Database) : Repository {
         transaction(database) {
             SchemaUtils.createMissingTablesAndColumns(StoreSchema, SeasonSchema, StoreSeasonSchema)
 
-            TransactionManager.current().exec("""ALTER TABLE stores_seasons DROP CONSTRAINT IF EXISTS fk_stores_seasons;""")
-            TransactionManager.current().exec("""ALTER TABLE stores_seasons ADD CONSTRAINT fk_stores_seasons FOREIGN KEY (half, year) REFERENCES "season"(half, year);""")
+            TransactionManager.current()
+                .exec("""ALTER TABLE stores_seasons DROP CONSTRAINT IF EXISTS fk_stores_seasons;""")
+            TransactionManager.current()
+                .exec("""ALTER TABLE stores_seasons ADD CONSTRAINT fk_stores_seasons FOREIGN KEY (half, year) REFERENCES "season"(half, year) ON DELETE CASCADE ON UPDATE CASCADE""")
         }
     }
 }

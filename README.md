@@ -24,7 +24,9 @@ The frontend app will be accessible through `localhost:8080` and the backend app
       wanted to get more experienced with it, I've decided to go for it
 - Exposed API Key, database user and password
     - I understood that security was not part of the evaluation criteria. 
-
+- All stores fields nullable except id and name. Was following the KISS and lean principle,
+  since the id was the identifier it couldn't be null, and name was editable, I figured it made sense
+  not to allow it to be null. 
 ### Possible optimizations
 
 - Use yarn instead of npm in docker compose, faster boot times

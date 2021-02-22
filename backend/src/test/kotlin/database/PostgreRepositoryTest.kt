@@ -114,9 +114,9 @@ class PostgreRepositoryTest {
         conn.createStatement().execute("INSERT INTO store(id, name) VALUES (2, 'Store 2');")
         conn.createStatement().execute("INSERT INTO season(half, year) VALUES ('H1', 2021);")
         conn.createStatement().execute("INSERT INTO season(half, year) VALUES ('H2', 2022);")
-        val storeSeasons = mapOf(
-            1.toLong() to Season(SeasonHalf.H1, Year.of(2021)),
-            2.toLong() to Season(SeasonHalf.H2, Year.of(2022)),
+        val storeSeasons = listOf(
+            Pair(1.toLong(), Season(SeasonHalf.H1, Year.of(2021))),
+            Pair(2.toLong(), Season(SeasonHalf.H2, Year.of(2022))),
         )
         repo.importStoreSeasons(storeSeasons)
         assertEquals(storeSeasons, repo.getStoreSeasons())
