@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-source set_env.sh $@
+source set_env.sh
 
 ./gradlew build
 

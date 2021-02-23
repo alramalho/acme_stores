@@ -8,11 +8,11 @@ object Config {
 
     val repository by lazy {
         PostgreRepository(
-            Database.connect(url = "jdbc:postgresql://localhost:5432/", user = "admin", password = "admin")
+            Database.connect(url = "jdbc:postgresql://localhost:${System.getenv("DB_PORT")}/main", user="admin", password = "admin")
         ).also(PostgreRepository::updateSchema)
     }
 
     val storesGateway by lazy {
-        StoresAPIGateway(apiUrl = "http://134.209.29.209/", apiKey = System.getenv("API_KEY"))
+        StoresAPIGateway(apiUrl = "http://134.209.29.209", apiKey = System.getenv("API_KEY"))
     }
 }

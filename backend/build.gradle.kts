@@ -24,7 +24,8 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.+")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.1")
     implementation("ru.yandex.qatools.embed:postgresql-embedded:2.10")
-//    implementation("de.flapdoodle.embed:de.flapdoodle.embed.process:2.0.5")
+//    implementatio("de.flapdoodle.embed:de.flapdoodle.embed.process:2.0.5")
+    implementation("org.postgresql:postgresql:42.2.16")
     implementation("com.impossibl.pgjdbc-ng:pgjdbc-ng:0.8.6")
 
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.+")
