@@ -6,10 +6,8 @@ import entities.Season
 import entities.SeasonHalf
 import entities.Store
 import io.javalin.Javalin
-import io.mockk.clearAllMocks
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
+import org.eclipse.jetty.http.HttpStatus
 import org.junit.jupiter.api.*
 import java.net.URI
 import java.net.http.HttpClient
@@ -63,8 +61,8 @@ class ImportHandlerTest {
         )
         every { gateway.getStores() } returns returnedStoresList
         every { mockRepo.getStores() } returns listOf()
-        every { mockRepo.importStores(any()) } returns Unit
-        every { mockRepo.updateStores(any()) } returns Unit
+        justRun { mockRepo.importStores(any()) }
+        justRun { mockRepo.updateStores(any()) }
 
         HttpClient.newHttpClient().send(
             HttpRequest.newBuilder().GET().uri(URI("http://localhost:1234")).build(),
@@ -77,6 +75,21 @@ class ImportHandlerTest {
         }
     }
 
+    @Test
+    fun `should return 503 and not import stores if gateway throws`() {
+        every { gateway.getStores() } throws Exception()
+        every { mockRepo.getStores() } returns listOf()
+        justRun { mockRepo.importStores(any()) }
+        justRun { mockRepo.updateStores(any()) }
+
+        val response = HttpClient.newHttpClient().send(
+            HttpRequest.newBuilder().GET().uri(URI("http://localhost:1234")).build(),
+            HttpResponse.BodyHandlers.ofString()
+        )
+
+        verify(exactly = 0) { mockRepo.importStores(any()) }
+        Assertions.assertEquals(response.statusCode(), HttpStatus.SERVICE_UNAVAILABLE_503)
+    }
     @Test
     fun `should update existing stores in the repo`() {
         val storesFromAPI = listOf(
@@ -114,7 +127,6 @@ class ImportHandlerTest {
         }
     }
 
-
     @Test
     fun `should successfully import the new gateway seasons & stores-seasons relationships into the repo`() {
         val returnedSeasonStores = listOf(
@@ -139,24 +151,19 @@ class ImportHandlerTest {
             mockRepo.importStoreSeasons(returnedSeasonStores)
         }
     }
-//
-//    @Test
-//    fun `should update existing seasons in the repo`() {
-//        val returnedSeasonStores = listOf(
-//            Pair(1.toLong(), Season(SeasonHalf.H1, Year.of(2021))),
-//            Pair(2.toLong(), Season(SeasonHalf.H2, Year.of(2022)))
-//        )
-//        every { gateway.getStoresAndSeasons() } returns returnedSeasonStores
-//        every { mockRepo.getSeasons() } returns listOf(Season(SeasonHalf.H1, Year.of(2021)))
-//
-//        HttpClient.newHttpClient().send(
-//            HttpRequest.newBuilder().GET().uri(URI("http://localhost:1234")).build(),
-//            HttpResponse.BodyHandlers.ofString()
-//        )
-//
-//        verify(exactly = 1) {
-//            mockRepo.updateSeasons(listOf(Pair(2.toLong(), Season(SeasonHalf.H2, Year.of(2022)))))
-//        }
-//    }
 
+    @Test
+    fun `should return 503 and not import seasons or stores-seasons if gateway throws`() {
+        every { gateway.getStoresAndSeasons() } throws Exception()
+        every { mockRepo.getStores() } returns listOf()
+
+        val response = HttpClient.newHttpClient().send(
+            HttpRequest.newBuilder().GET().uri(URI("http://localhost:1234")).build(),
+            HttpResponse.BodyHandlers.ofString()
+        )
+
+        verify(exactly = 0) { mockRepo.importSeasons(any()) }
+        verify(exactly = 0) { mockRepo.importStoreSeasons(any()) }
+        Assertions.assertEquals(response.statusCode(), HttpStatus.SERVICE_UNAVAILABLE_503)
+    }
 }

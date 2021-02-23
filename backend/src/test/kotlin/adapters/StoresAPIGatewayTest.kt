@@ -85,7 +85,6 @@ class StoresAPIGatewayTest {
         assertEquals(apiKeyHeader, "key")
     }
 
-
     @Test
     fun `should retrieve the stores and seasons form the API and ignore the unparsable`() {
         var apiKeyHeader: String? = null
