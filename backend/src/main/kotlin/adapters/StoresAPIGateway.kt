@@ -8,6 +8,7 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest.newBuilder
 import com.fasterxml.jackson.databind.ObjectMapper
 import entities.Season
+import org.eclipse.jetty.http.HttpStatus
 import java.net.http.HttpResponse.BodyHandlers.ofString
 import java.time.LocalDate
 
@@ -23,6 +24,7 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
             .uri(URI("$apiUrl/v1/stores"))
 
         return httpClient.send(request.build(), ofString()).run {
+            check(this.statusCode() == HttpStatus.OK_200) { throw Exception() }
             objectMapper.readTree(this.body()).toStores()
         }
     }
@@ -33,6 +35,7 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
             .header("apiKey", apiKey)
 
         return httpClient.send(request.build(), ofString()).run {
+            check(this.statusCode() == HttpStatus.OK_200) { throw Exception() }
             objectMapper.readTree(this.body()).toStoresAndSeasons()
         }
     }

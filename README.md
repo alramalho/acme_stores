@@ -33,3 +33,4 @@ The frontend app will be accessible through `localhost:8080` and the backend app
 - Silence warnings when running backend
 - Use Enum for season half instead of varchar in DB
 - Do not hardcode SQL code (to use FK of stores_seasons table). Related to [this issue](https://github.com/JetBrains/Exposed/issues/511)
+- Use more specific exceptions throughout the code

@@ -131,4 +131,28 @@ class StoresAPIGatewayTest {
         assertEquals(storesAndSeasons, expectedStoresAndSeasons)
         assertEquals(apiKeyHeader, "key")
     }
+
+    @Test
+    fun `should throw when api stores endpoint does not return 200`(){
+        mockApi = Javalin.create().start(1234)
+            .get("/v1/stores/") {
+                it.status(500)
+            }
+
+        assertThrows<Exception> {
+            gateway.getStores()
+        }
+    }
+
+    @Test
+    fun `should throw when api stores and seasons endpoint does not return 200`(){
+        mockApi = Javalin.create().start(1234)
+            .get("/other/stores_and_seasons") {
+                it.status(500)
+            }
+
+        assertThrows<Exception> {
+            gateway.getStoresAndSeasons()
+        }
+    }
 }
