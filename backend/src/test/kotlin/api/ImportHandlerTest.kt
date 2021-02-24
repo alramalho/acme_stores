@@ -153,7 +153,7 @@ class ImportHandlerTest {
     }
 
     @Test
-    fun `should return 503 and not import seasons or stores-seasons if gateway throws`() {
+    fun `should not import seasons or stores-seasons and return status 503 when gateway throws`() {
         every { gateway.getStoresAndSeasons() } throws Exception()
         every { mockRepo.getStores() } returns listOf()
 

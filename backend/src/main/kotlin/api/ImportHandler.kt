@@ -40,7 +40,7 @@ class ImportHandler(
             )
         } catch (e: Exception) {
             ctx.status(HttpStatus.SERVICE_UNAVAILABLE_503)
-            ctx.result("Could not connect to Stores API.")
+            ctx.result(e.message.toString())
             return
         }
     }
