@@ -9,24 +9,42 @@ import java.net.http.HttpRequest.newBuilder
 import com.fasterxml.jackson.databind.ObjectMapper
 import entities.Season
 import org.eclipse.jetty.http.HttpStatus
+import org.jetbrains.exposed.sql.exposedLogger
 import java.net.http.HttpResponse.BodyHandlers.ofString
 import java.time.LocalDate
 
-// TODO: API UNAVAILABILITY
 class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) : StoresGateway {
+    companion object {
+        private const val MAX_ATTEMPTS = 5
+    }
+
     private val httpClient: HttpClient = HttpClient.newHttpClient()
     private val objectMapper = ObjectMapper()
 
-    // TODO: PAGINATION
     override fun getStores(): List<Store> {
-        val request = newBuilder().GET()
-            .header("apiKey", apiKey)
-            .uri(URI("$apiUrl/v1/stores"))
+        var pageQuerier = 0
+        val stores = mutableListOf<Store>()
+        var storesFromApi = listOf<Store>()
 
-        return httpClient.send(request.build(), ofString()).run {
-            check(this.statusCode() == HttpStatus.OK_200) { throw Exception() }
-            objectMapper.readTree(this.body()).toStores()
+        while (storesFromApi.isNotEmpty() || pageQuerier == 0) {
+            val request = newBuilder().GET()
+                .header("apiKey", apiKey)
+                .uri(URI("$apiUrl/v1/stores/?page=$pageQuerier"))
+
+            for (attempt in 1..MAX_ATTEMPTS) {
+                storesFromApi = (httpClient.send(request.build(), ofString()).run {
+                    if (this.statusCode() != HttpStatus.OK_200 && attempt == MAX_ATTEMPTS) {
+                        print("API failed in page $pageQuerier")
+                        return stores
+                    }
+                    objectMapper.readTree(this.body()).toStores()
+                })
+            }
+            stores.addAll(storesFromApi)
+
+            pageQuerier += 1
         }
+        return stores
     }
 
     override fun getStoresAndSeasons(): List<Pair<Long, Season>> {
