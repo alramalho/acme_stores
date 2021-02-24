@@ -13,7 +13,7 @@ class PostgreRepository(private val database: Database) : Repository {
     private object StoreSchema : Table("store") {
         val id = long("id")
         val code = varchar("code", 1500).nullable()
-        val description = varchar("description", 1500).nullable()
+        val description = varchar("description", 3000).nullable()
         val name = varchar("name", 50)
         val openingDate = date("openingDate").nullable()
         val storeType = varchar("storeType", 100).nullable()
