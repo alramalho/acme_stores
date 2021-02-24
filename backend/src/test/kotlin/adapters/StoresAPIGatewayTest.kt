@@ -115,11 +115,13 @@ class StoresAPIGatewayTest {
 
             val stores = gateway.getStores()
             assertEquals(5, counter)
-            assertEquals(listOf(
-                Store(id=0, name="Store 0",),
-                Store(id=1, name="Store 1",),
-                Store(id=2, name="Store 2",),
-            ), stores)
+            assertEquals(
+                listOf(
+                    Store(id = 0, name = "Store 0"),
+                    Store(id = 1, name = "Store 1"),
+                    Store(id = 2, name = "Store 2"),
+                ), stores
+            )
         }
 
         @Test
@@ -212,12 +214,29 @@ class StoresAPIGatewayTest {
         fun `should throw when api stores and seasons endpoint does not return 200`() {
             mockApi = Javalin.create().start(1234)
                 .get("/other/stores_and_seasons") {
-                    it.status(500)
+                    it.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
                 }
 
             assertThrows<Exception> {
                 gateway.getStoresAndSeasons()
             }
+        }
+
+
+        @Test
+        @Timeout(value = 7, unit = TimeUnit.SECONDS)
+        fun `should attempt 5 times before failing`() {
+            var counter = 0
+            mockApi = Javalin.create().start(1234)
+                .get("/other/stores_and_seasons") {
+                    counter++
+                    it.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                }
+
+            assertThrows<Exception> {
+                gateway.getStoresAndSeasons()
+            }
+            assertEquals(5, counter)
         }
     }
 }

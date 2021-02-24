@@ -52,10 +52,19 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
             .uri(URI("$apiUrl/other/stores_and_seasons"))
             .header("apiKey", apiKey)
 
-        return httpClient.send(request.build(), ofString()).run {
-            check(this.statusCode() == HttpStatus.OK_200) { throw Exception() }
-            objectMapper.readTree(this.body()).toStoresAndSeasons()
+        var returnedException: Exception = Exception("Unexpected error at stores and seasons endpoint")
+        for (attempt in 1..MAX_ATTEMPTS) {
+            try {
+                httpClient.send(request.build(), ofString()).run {
+                    check(this.statusCode() == HttpStatus.OK_200) { throw Exception() }
+                    objectMapper.readTree(this.body()).toStoresAndSeasons()
+                }
+            } catch (e: Exception) {
+                returnedException = e
+                continue
+            }
         }
+        throw returnedException
     }
 
     override fun getCSV() {
