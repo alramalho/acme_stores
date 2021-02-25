@@ -241,7 +241,13 @@ class StoresAPIGatewayTest {
     }
 
     @Nested
-    inner class CSVEdnpoint {
+    inner class CSVEndpoint {
+        @AfterEach
+        @Suppress("unused")
+        fun `tear down`() {
+            mockApi.stop()
+        }
+
         @Test
         fun `should retrieve the CSV information and return it`() {
             mockApi = Javalin.create().start(1234)
