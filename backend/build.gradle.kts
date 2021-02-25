@@ -27,6 +27,7 @@ dependencies {
 //    implementatio("de.flapdoodle.embed:de.flapdoodle.embed.process:2.0.5")
     implementation("org.postgresql:postgresql:42.2.16")
     implementation("com.impossibl.pgjdbc-ng:pgjdbc-ng:0.8.6")
+    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:0.15.1")
 
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.+")
     testImplementation("io.mockk:mockk:1.+")

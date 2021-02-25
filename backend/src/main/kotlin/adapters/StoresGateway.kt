@@ -6,5 +6,5 @@ import entities.Store
 interface StoresGateway {
     fun getStores(): List<Store>
     fun getStoresAndSeasons(): List<Pair<Long, Season>>
-    fun getCSV()
+    fun getCSV(): List<Map<String, String>>
 }

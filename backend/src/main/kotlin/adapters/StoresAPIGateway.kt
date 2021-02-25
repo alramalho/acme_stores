@@ -7,9 +7,9 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest.newBuilder
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import entities.Season
 import org.eclipse.jetty.http.HttpStatus
-import org.jetbrains.exposed.sql.exposedLogger
 import java.net.http.HttpResponse.BodyHandlers.ofString
 import java.time.LocalDate
 
@@ -67,8 +67,24 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
         throw returnedException
     }
 
-    override fun getCSV() {
-        TODO("Not yet implemented")
+    override fun getCSV(): List<Map<String, String>> {
+        val request = newBuilder().GET()
+            .uri(URI("$apiUrl/extra_data.csv"))
+            .header("apiKey", apiKey)
+
+        var returnedException: Exception = Exception("Unexpected error at get CSV endpoint")
+        for (attempt in 1..MAX_ATTEMPTS) {
+            try {
+                return httpClient.send(request.build(), ofString()).run {
+                    check(this.statusCode() == HttpStatus.OK_200) { throw Exception() }
+                    csvReader().readAllWithHeader(this.body().replaceFirst(" Special field 2", "Special field 2"))
+                }
+            } catch (e: Exception) {
+                returnedException = e
+                continue
+            }
+        }
+        throw returnedException
     }
 
     private fun JsonNode.toStores(): List<Store> {

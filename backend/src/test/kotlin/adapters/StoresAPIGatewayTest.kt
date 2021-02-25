@@ -239,4 +239,60 @@ class StoresAPIGatewayTest {
             assertEquals(5, counter)
         }
     }
+
+    @Nested
+    inner class CSVEdnpoint {
+        @Test
+        fun `should retrieve the CSV information and return it`() {
+            mockApi = Javalin.create().start(1234)
+                .get("/extra_data.csv") {
+                    it.result(
+                        """
+                        Store id,Special field 1, Special field 2
+                        1,, special field 1_2
+                        2, special field 2_1,
+                        3,special field 3_1, special field 3_2
+                    """.trimIndent()
+                    )
+                    it.contentType("text/plain;charset=UTF-8")
+                }
+
+            val csvInfo = gateway.getCSV()
+
+            assertEquals(
+                listOf(
+                    mapOf(
+                        "Store id" to "1",
+                        "Special field 1" to "",
+                        "Special field 2" to " special field 1_2",
+                    ),
+                    mapOf(
+                        "Store id" to "2",
+                        "Special field 1" to " special field 2_1",
+                        "Special field 2" to "",
+                    ),
+                    mapOf(
+                        "Store id" to "3",
+                        "Special field 1" to "special field 3_1",
+                        "Special field 2" to " special field 3_2",
+                    ),
+                ),
+                csvInfo
+            )
+        }
+
+        @Test
+        fun `should attempt 5 times before failing`(){
+            var counter = 0
+            mockApi = Javalin.create().start(1234)
+                .get("/extra_data.csv") {
+                    counter++
+                    it.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                }
+            assertThrows<Exception> {
+                gateway.getCSV()
+            }
+            assertEquals(5, counter)
+        }
+    }
 }
