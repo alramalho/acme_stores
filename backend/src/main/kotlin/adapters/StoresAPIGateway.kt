@@ -34,7 +34,7 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
             for (attempt in 1..MAX_ATTEMPTS) {
                 storesFromApi = (httpClient.send(request.build(), ofString()).run {
                     if (this.statusCode() != HttpStatus.OK_200 && attempt == MAX_ATTEMPTS) {
-                        print("API failed in page $pageQuerier")
+                        print("Stores endpoint failed 5 consecutive times in page $pageQuerier")
                         return stores
                     }
                     objectMapper.readTree(this.body()).toStores()
@@ -55,7 +55,7 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
         var returnedException: Exception = Exception("Unexpected error at stores and seasons endpoint")
         for (attempt in 1..MAX_ATTEMPTS) {
             try {
-                httpClient.send(request.build(), ofString()).run {
+                return httpClient.send(request.build(), ofString()).run {
                     check(this.statusCode() == HttpStatus.OK_200) { throw Exception() }
                     objectMapper.readTree(this.body()).toStoresAndSeasons()
                 }

@@ -23,8 +23,7 @@ class ImportHandler(
             repo.importStores(storesFromApi
                 .toSet()
                 .filter { it !in existingStores }
-                .toList()
-            )
+                .toList())
             repo.updateStores(storesFromApi
                 .toSet()
                 .filter { it in existingStores }
@@ -36,8 +35,12 @@ class ImportHandler(
             repo.importStoreSeasons(storesAndSeasonsFromApi
                 .toSet()
                 .filter { it !in existingStoresAndSeasons }
-                .toList()
-            )
+                .filter { it.first in existingStores.map { store -> store.id } }
+                .filter { it.second in existingSeasons }
+                .toList())
+
+            ctx.status(HttpStatus.CREATED_201)
+            ctx.result("Process finished successfully.")
         } catch (e: Exception) {
             ctx.status(HttpStatus.SERVICE_UNAVAILABLE_503)
             ctx.result(e.message.toString())

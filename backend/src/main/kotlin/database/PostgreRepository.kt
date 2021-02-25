@@ -3,16 +3,18 @@ package database
 import entities.Season
 import entities.SeasonHalf.Companion.toSeasonHalf
 import entities.Store
+import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.`java-time`.date
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.sql.SQLException
 import java.time.Year
 
 class PostgreRepository(private val database: Database) : Repository {
     private object StoreSchema : Table("store") {
         val id = long("id")
-        val code = varchar("code", 1500).nullable()
+        val code = varchar("code", 3000).nullable()
         val description = varchar("description", 3000).nullable()
         val name = varchar("name", 50)
         val openingDate = date("openingDate").nullable()
@@ -96,12 +98,22 @@ class PostgreRepository(private val database: Database) : Repository {
         }
     }
 
-    override fun importStoreSeasons(map: List<Pair<Long, Season>>): Unit = transaction(database) {
+    override fun importStoreSeasons(map: List<Pair<Long, Season>>) {
         for ((id, season) in map) {
-            StoreSeasonSchema.insert {
-                it[storeId] = id
-                it[half] = season.half.toString()
-                it[year] = season.year.value
+            try {
+                transaction(database) {
+                    StoreSeasonSchema.insert {
+                        it[storeId] = id
+                        it[half] = season.half.toString()
+                        it[year] = season.year.value
+                    }
+                }
+            } catch (ex: SQLException) {
+                if (ex.cause?.message?.contains("fk_stores_seasons_storeid_id") == true) {
+                    print("Could not insert store season for Store id $id and season ${season.half} ${season.year} due to FK constraint. Will continue execution")
+                } else {
+                    throw ex
+                }
             }
         }
     }

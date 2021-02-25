@@ -90,6 +90,7 @@ class ImportHandlerTest {
         verify(exactly = 0) { mockRepo.importStores(any()) }
         Assertions.assertEquals(response.statusCode(), HttpStatus.SERVICE_UNAVAILABLE_503)
     }
+
     @Test
     fun `should update existing stores in the repo`() {
         val storesFromAPI = listOf(
@@ -116,27 +117,32 @@ class ImportHandlerTest {
 
         verify(exactly = 1) {
             gateway.getStores()
-            mockRepo.updateStores(listOf(Store(
-                id = 1,
-                code = "dummy-code-1",
-                description = "descr-1",
-                name = "Store 1",
-                openingDate = LocalDate.of(2021, 2, 7),
-                storeType = "STORE FRONT"
-            )))
+            mockRepo.updateStores(
+                listOf(
+                    Store(
+                        id = 1,
+                        code = "dummy-code-1",
+                        description = "descr-1",
+                        name = "Store 1",
+                        openingDate = LocalDate.of(2021, 2, 7),
+                        storeType = "STORE FRONT"
+                    )
+                )
+            )
         }
     }
 
     @Test
-    fun `should successfully import the new gateway seasons & stores-seasons relationships into the repo`() {
-        val returnedSeasonStores = listOf(
+    fun `should only import the seasons & stores-seasons relationships for stores and seasons present in the repo`() {
+        every { mockRepo.getStores() } returns listOf(Store(id = 1, name = "Store 1"))
+        every { mockRepo.getSeasons() } returns listOf(Season(SeasonHalf.H1, Year.of(2021)))
+        val gatewayStoresAndSeasons = listOf(
             Pair(1.toLong(), Season(SeasonHalf.H1, Year.of(2021))),
+            Pair(1.toLong(), Season(SeasonHalf.H2, Year.of(2021))),
+            Pair(2.toLong(), Season(SeasonHalf.H1, Year.of(2022))),
             Pair(2.toLong(), Season(SeasonHalf.H2, Year.of(2022)))
         )
-        every { gateway.getStoresAndSeasons() } returns returnedSeasonStores
-        every { mockRepo.getSeasons() } returns listOf(
-            Season(SeasonHalf.H1, Year.of(2021))
-        )
+        every { gateway.getStoresAndSeasons() } returns gatewayStoresAndSeasons
 
         HttpClient.newHttpClient().send(
             HttpRequest.newBuilder().GET().uri(URI("http://localhost:1234")).build(),
@@ -145,10 +151,40 @@ class ImportHandlerTest {
 
         verify(exactly = 1) {
             gateway.getStoresAndSeasons()
-            mockRepo.importSeasons(listOf(
-                Season(SeasonHalf.H2, Year.of(2022))
-            ))
-            mockRepo.importStoreSeasons(returnedSeasonStores)
+            mockRepo.importStoreSeasons(
+                listOf(
+                    Pair(1.toLong(), Season(SeasonHalf.H1, Year.of(2021)))
+                )
+            )
+        }
+    }
+
+
+    @Test
+    fun `should only import the returned gateway seasons for seasons not already present in the repo`() {
+        every { mockRepo.getSeasons() } returns listOf(Season(SeasonHalf.H1, Year.of(2021)))
+        val gatewayStoresAndSeasons = listOf(
+            Pair(1.toLong(), Season(SeasonHalf.H1, Year.of(2021))),
+            Pair(1.toLong(), Season(SeasonHalf.H2, Year.of(2021))),
+            Pair(2.toLong(), Season(SeasonHalf.H1, Year.of(2022))),
+            Pair(2.toLong(), Season(SeasonHalf.H2, Year.of(2022)))
+        )
+        every { gateway.getStoresAndSeasons() } returns gatewayStoresAndSeasons
+
+        HttpClient.newHttpClient().send(
+            HttpRequest.newBuilder().GET().uri(URI("http://localhost:1234")).build(),
+            HttpResponse.BodyHandlers.ofString()
+        )
+
+        verify(exactly = 1) {
+            gateway.getStoresAndSeasons()
+            mockRepo.importSeasons(
+                listOf(
+                    Season(SeasonHalf.H2, Year.of(2021)),
+                    Season(SeasonHalf.H1, Year.of(2022)),
+                    Season(SeasonHalf.H2, Year.of(2022))
+                )
+            )
         }
     }
 

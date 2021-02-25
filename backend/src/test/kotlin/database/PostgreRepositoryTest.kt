@@ -20,8 +20,8 @@ class PostgreRepositoryTest {
     @BeforeAll
     @Suppress("unused")
     fun setup() {
-        db = EmbeddedPostgres("V9_6");
-        db.start("localhost", 3301, "db", "user", "pass");
+        db = EmbeddedPostgres("V9_6")
+        db.start("localhost", 3301, "db", "user", "pass")
         conn = Database.connect(
             url = "jdbc:pgsql://localhost:3301/db",
             user = "user",
@@ -120,6 +120,19 @@ class PostgreRepositoryTest {
         )
         repo.importStoreSeasons(storeSeasons)
         assertEquals(storeSeasons, repo.getStoreSeasons())
+    }
+
+    @Test
+    fun `should continue the store and season import on FK violation for unexisting store or seasons `() {
+        val conn = DriverManager.getConnection("jdbc:pgsql://user:pass@localhost:3301/db")
+        conn.createStatement().execute("INSERT INTO store(id, name) VALUES (2, 'Store 2');")
+        conn.createStatement().execute("INSERT INTO season(half, year) VALUES ('H2', 2022);")
+        val storeSeasons = listOf(
+            Pair(1.toLong(), Season(SeasonHalf.H1, Year.of(2021))),
+            Pair(2.toLong(), Season(SeasonHalf.H2, Year.of(2022))),
+        )
+        repo.importStoreSeasons(storeSeasons)
+        assertEquals(listOf(Pair(2.toLong(), Season(SeasonHalf.H2, Year.of(2022)))), repo.getStoreSeasons())
     }
 
 }
