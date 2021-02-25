@@ -58,6 +58,8 @@ class PostgreRepository(private val database: Database) : Repository {
                 name = it[StoreSchema.name],
                 openingDate = it[StoreSchema.openingDate],
                 storeType = it[StoreSchema.storeType],
+                specialField1 = it[StoreSchema.specialField1],
+                specialField2 = it[StoreSchema.specialField2],
             )
         }
     }

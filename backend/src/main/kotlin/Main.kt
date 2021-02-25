@@ -1,10 +1,11 @@
 import adapters.StoresGateway
+import api.GetStoresHandler
 import api.ImportHandler
 import config.Config
 import database.Repository
 import io.javalin.Javalin
 
-fun main(args: Array<String>) {
+fun main() {
     with(Config) {
         WebApp(
             port = 7000,
@@ -24,6 +25,7 @@ class WebApp(
             ctx.result("Hello!")
         }
         .get("/import", ImportHandler(storesGateway, repo))
+        .get("/stores", GetStoresHandler(repo))
 
     fun start() {
         app.start(port)
