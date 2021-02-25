@@ -19,6 +19,8 @@ class PostgreRepository(private val database: Database) : Repository {
         val name = varchar("name", 50)
         val openingDate = date("openingDate").nullable()
         val storeType = varchar("storeType", 100).nullable()
+        val specialField1 = varchar("specialField1", 1500).nullable()
+        val specialField2 = varchar("specialField2", 1500).nullable()
 
         override val primaryKey = PrimaryKey(id)
     }
@@ -69,6 +71,8 @@ class PostgreRepository(private val database: Database) : Repository {
                 it[name] = store.name
                 it[openingDate] = store.openingDate
                 it[storeType] = store.storeType
+                it[specialField1] = store.specialField1
+                it[specialField2] = store.specialField2
             }
         }
     }

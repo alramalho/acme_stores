@@ -77,7 +77,9 @@ class PostgreRepositoryTest {
                 description = "descr-1",
                 name = "Store 1",
                 openingDate = LocalDate.of(2021, 2, 7),
-                storeType = "STORE FRONT"
+                storeType = "STORE FRONT",
+                specialField1 = "s1",
+                specialField2 = "s2",
             )
         )
 

@@ -3,6 +3,7 @@ package api
 import adapters.StoresGateway
 import database.Repository
 import entities.Season
+import entities.Store
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import org.eclipse.jetty.http.HttpStatus
@@ -13,21 +14,46 @@ class ImportHandler(
 ) : Handler {
     override fun handle(ctx: Context) {
         try {
-            val storesFromApi = gateway.getStores()
-            val existingStores = repo.getStores()
+            val storesFromApi: List<Store> = gateway.getStores()
+            val existingStores: List<Store> = repo.getStores()
             val storesAndSeasonsFromApi: List<Pair<Long, Season>> = gateway.getStoresAndSeasons()
             val seasonsFromApi: List<Season> = storesAndSeasonsFromApi.map { it.second }
             val existingStoresAndSeasons: List<Pair<Long, Season>> = repo.getStoreSeasons()
             val existingSeasons: List<Season> = repo.getSeasons()
 
+            val storesToUpdate: MutableList<Store> = storesFromApi
+                .toSet()
+                .filter { it in existingStores }
+                .toMutableList()
+
+            val mappedStores: MutableMap<Long, Store> = mutableMapOf()
+            storesToUpdate.map { mappedStores.plus(Pair(it.id, it)) }
+
+            for (entry in gateway.getCSV()) {
+                try {
+                    val entryId = entry["Store id"]!!.toLong()
+                    val existentStore = mappedStores[entryId]!!
+                    storesToUpdate.add(
+                        Store(
+                            id = entryId,
+                            name = existentStore.name,
+                            code = existentStore.code,
+                            description = existentStore.description,
+                            openingDate = existentStore.openingDate,
+                            specialField1 = entry["Special field 1"],
+                            specialField2 = entry["Special field 2"]
+                        )
+                    )
+                } catch (e: Exception) {
+                    continue
+                }
+            }
+
             repo.importStores(storesFromApi
                 .toSet()
                 .filter { it !in existingStores }
                 .toList())
-            repo.updateStores(storesFromApi
-                .toSet()
-                .filter { it in existingStores }
-                .toList())
+            repo.updateStores(storesToUpdate)
             repo.importSeasons(seasonsFromApi
                 .toSet()
                 .filter { it !in existingSeasons }

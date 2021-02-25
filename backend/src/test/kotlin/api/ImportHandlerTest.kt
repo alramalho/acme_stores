@@ -159,7 +159,6 @@ class ImportHandlerTest {
         }
     }
 
-
     @Test
     fun `should only import the returned gateway seasons for seasons not already present in the repo`() {
         every { mockRepo.getSeasons() } returns listOf(Season(SeasonHalf.H1, Year.of(2021)))
@@ -201,5 +200,58 @@ class ImportHandlerTest {
         verify(exactly = 0) { mockRepo.importSeasons(any()) }
         verify(exactly = 0) { mockRepo.importStoreSeasons(any()) }
         Assertions.assertEquals(response.statusCode(), HttpStatus.SERVICE_UNAVAILABLE_503)
+    }
+
+    @Test
+    fun `should update the existent stores with the CSV information`() {
+        every { gateway.getStores() } returns listOf(
+            Store(id=1, name="Store 1"),
+            Store(id=2, name="Store 2")
+        )
+        every { mockRepo.getStores() } returns listOf(
+            Store(id=1, name="Store 1"),
+            Store(id=2, name="Store 2")
+        )
+        every { gateway.getCSV() } returns listOf(
+            mapOf(
+                "Store id" to "1",
+                "Special field 1" to "",
+                "Special field 2" to " special field 1_2",
+            ),
+            mapOf(
+                "Store id" to "2",
+                "Special field 1" to " special field 2_1",
+                "Special field 2" to "",
+            ),
+            mapOf(
+                "Store id" to "3",
+                "Special field 1" to "special field 3_1",
+                "Special field 2" to " special field 3_2",
+            ),
+        )
+
+        HttpClient.newHttpClient().send(
+            HttpRequest.newBuilder().GET().uri(URI("http://localhost:1234")).build(),
+            HttpResponse.BodyHandlers.ofString()
+        )
+
+        verify(exactly = 1) {
+            mockRepo.updateStores(
+                listOf(
+                    Store(
+                        id = 1,
+                        name = "Store 1",
+                        specialField1 = "",
+                        specialField2 = " special field 1_2"
+                    ),
+                    Store(
+                        id = 2,
+                        name = "Store 2",
+                        specialField1 = " special field 2_1",
+                        specialField2 = ""
+                    )
+                )
+            )
+        }
     }
 }

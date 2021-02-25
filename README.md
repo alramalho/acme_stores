@@ -29,6 +29,7 @@ The frontend app will be accessible through `localhost:8080` and the backend app
   not to allow it to be null.
 - Store `code` size of 1500
   - Nothing was specified in the API regarding special treatment on `code` parameter, therefore no spaces were trailed.
+
 ### Possible optimizations
 
 - Use yarn instead of npm in docker compose, faster boot times
@@ -38,3 +39,4 @@ The frontend app will be accessible through `localhost:8080` and the backend app
 - Use more specific exceptions throughout the code
 - Only use one driver in repo tests
   - Decision made to decrease delivery time.
+- Refactor CSV logic in the Handler, it doesn't read too well, and could be improved.

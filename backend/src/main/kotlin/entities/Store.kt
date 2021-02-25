@@ -10,7 +10,9 @@ data class Store(
     val description: String? = null,
     val name: String,
     val openingDate: LocalDate? = null,
-    val storeType: String? = null
+    val storeType: String? = null,
+    var specialField1: String? = null,
+    var specialField2: String? = null
 ) {
     override fun equals(other: Any?): Boolean {
         return if (other is Store) id == other.id else false
