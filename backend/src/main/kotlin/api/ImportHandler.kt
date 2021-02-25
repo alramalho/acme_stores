@@ -29,7 +29,8 @@ class ImportHandler(
             val mappedStores: MutableMap<Long, Store> = mutableMapOf()
             storesToUpdate.map { mappedStores.plus(Pair(it.id, it)) }
 
-            for (entry in gateway.getCSV()) {
+            val csvFromApi = gateway.getCSV()
+            for (entry in csvFromApi) {
                 try {
                     val entryId = entry["Store id"]!!.toLong()
                     val existentStore = mappedStores[entryId]!!
@@ -49,24 +50,28 @@ class ImportHandler(
                 }
             }
 
-            repo.importStores(storesFromApi
+            val storesToImport = storesFromApi
                 .toSet()
                 .filter { it !in existingStores }
-                .toList())
-            repo.updateStores(storesToUpdate)
-            repo.importSeasons(seasonsFromApi
+                .toList()
+            val seasonsToImport = seasonsFromApi
                 .toSet()
                 .filter { it !in existingSeasons }
-                .toList())
-            repo.importStoreSeasons(storesAndSeasonsFromApi
+                .toList()
+            val storeSeasonsToImport = storesAndSeasonsFromApi
                 .toSet()
                 .filter { it !in existingStoresAndSeasons }
                 .filter { it.first in existingStores.map { store -> store.id } }
                 .filter { it.second in existingSeasons }
-                .toList())
+                .toList()
+
+            repo.importStores(storesToImport)
+            repo.updateStores(storesToUpdate)
+            repo.importSeasons(seasonsToImport)
+            repo.importStoreSeasons(storeSeasonsToImport)
 
             ctx.status(HttpStatus.CREATED_201)
-            ctx.result("Process finished successfully.")
+            ctx.result("Process finished successfully. \nImported:\n${storesToImport.size} Stores\n${seasonsToImport.size} Seasons\n${storeSeasonsToImport.size} Season-Store relationships\nUpdated:\n${storesToUpdate.size} Stores\n")
         } catch (e: Exception) {
             ctx.status(HttpStatus.SERVICE_UNAVAILABLE_503)
             ctx.result(e.message.toString())
