@@ -10,7 +10,7 @@ fun main() {
         WebApp(
             port = 7000,
             repo = repository,
-            storesGateway=  storesGateway
+            storesGateway = storesGateway
         ).start()
     }
 }
@@ -20,7 +20,7 @@ class WebApp(
     repo: Repository,
     storesGateway: StoresGateway
 ) {
-    private val app = Javalin.create()
+    private val app = Javalin.create { it.enableCorsForAllOrigins() }
         .get("/") { ctx ->
             ctx.result("Hello!")
         }

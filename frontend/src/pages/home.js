@@ -28,7 +28,8 @@ const Home = () => {
         ]}
         title="Store viewer"
         options={{
-          draggable: false
+          draggable: false,
+          pageSize: 15,
         }}
         data={data}
       />
