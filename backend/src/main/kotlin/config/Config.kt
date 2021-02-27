@@ -8,7 +8,7 @@ object Config {
 
     val repository by lazy {
         PostgreRepository(
-            Database.connect(url = "jdbc:postgresql://localhost:${System.getenv("DB_PORT")}/main", user="admin", password = "admin")
+            Database.connect(url = "jdbc:postgresql://${System.getenv("DB_HOST")}:${System.getenv("DB_PORT")}/main", user="admin", password = "admin")
         ).also(PostgreRepository::updateSchema)
     }
 
