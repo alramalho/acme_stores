@@ -1,14 +1,13 @@
-FROM openjdk:8-jdk-alpine
+FROM gradle:jdk11-openj9 AS build
 
-# Prep image with gradle cache to use as mount point for host cache when container runs
-RUN mkdir /root/.gradle
+COPY --chown=gradle:gradle . /home/gradle/src
+WORKDIR /home/gradle/src
+RUN gradle build --no-daemon
 
-# We can mount the host code repo here if we to update with every run, but the copy below makes mounting unnecessary
-# if we only want the repo state at build time.
+FROM adoptopenjdk/openjdk11:latest
+
 RUN mkdir /app
 
-WORKDIR /app
-COPY . .
+COPY --from=build /home/gradle/src/build/libs/*.jar /app/backend.jar
 
-CMD ["./gradlew", "build"]
-CMD ["java", "-jar", "build/libs/backend-1.0-SNAPSHOT.jar"]
+ENTRYPOINT ["java","-jar","/app/backend.jar"]
