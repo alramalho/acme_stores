@@ -8,8 +8,8 @@ const Table = ({data, onNameChange}) => {
       icons={tableIcons}
       columns={[
         {
-          title: 'Id', field: 'id', editable: 'never', type: 'numeric', cellStyle: {
-            backgroundColor: '#fcfcfc',
+          title: 'Id', field: 'id', editable: 'never', type: 'numeric', width: 50, cellStyle: {
+            backgroundColor: '#fafbfc',
           },
         },
         {title: 'Name', field: 'name'},
@@ -31,9 +31,15 @@ const Table = ({data, onNameChange}) => {
         pageSize: 20,
         exportButton: true,
         exportAllData: true,
+        rowStyle: {
+          backgroundColor: '#fdfdfd',
+          color: '#1c1c1c'
+        },
         headerStyle: {
-          backgroundColor: '#eff5fa',
-          color: '#2a6ea7'
+          fontFamily: '\'Domine\', serif',
+          fontWeight: 700,
+          backgroundColor: '#fff3eb',
+          color: '#ff5700'
         }
       }}
       data={data}

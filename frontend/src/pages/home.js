@@ -32,6 +32,9 @@ const Home = () => {
   return (
     <div style={{padding: '5%'}} data-testid="wrapper">
       <Table data={data} onNameChange={handleNameChange}/>
+      <div className={'credits'}>
+        Made with ❤️ by <a href={'https://alramalho.com'}>Al</a>
+      </div>
     </div>
   )
 }
