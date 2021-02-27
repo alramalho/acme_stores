@@ -15,7 +15,7 @@ class PostgreRepository(private val database: Database) : Repository {
         val id = long("id")
         val code = varchar("code", 3000).nullable()
         val description = varchar("description", 3000).nullable()
-        val name = varchar("name", 50)
+        val name = varchar("name", 100)
         val openingDate = date("openingDate").nullable()
         val storeType = varchar("storeType", 100).nullable()
         val specialField1 = varchar("specialField1", 1500).nullable()
