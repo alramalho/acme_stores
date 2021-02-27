@@ -1,9 +1,9 @@
-import React, {forwardRef, useEffect, useState} from 'react'
-// import MaterialTable from "material-table";
+import React, {useEffect, useState} from 'react'
 import axios from "axios";
 import MaterialTable from "material-table";
-import {tableIcons} from "../utils/icons";
-
+import {tableIcons} from "../utils/styles";
+import {TextField} from "@material-ui/core";
+import Table from "../components/table";
 
 const Home = () => {
   const [data, setData] = useState([])
@@ -14,25 +14,14 @@ const Home = () => {
     })
   }, [])
 
+  // const updateStoreName = (storeId) => axios({
+  //   method: 'put',
+  //   url: '/update_store_name/'
+  // })
+
   return (
     <div style={{padding: '5%'}} data-testid="wrapper">
-      <MaterialTable
-        icons={tableIcons}
-        columns={[
-          {title: 'Id', field: 'id', type: 'numeric'},
-          {title: 'Name', field: 'name'},
-          {title: 'Code', field: 'code'},
-          {title: 'Opening Date', field: 'openingDate', type: "date"},
-          {title: 'Special field 1', field: 'specialField1'},
-          {title: 'Special field 2', field: 'spercialField2'}
-        ]}
-        title="Store viewer"
-        options={{
-          draggable: false,
-          pageSize: 15,
-        }}
-        data={data}
-      />
+      <Table data={data}/>
     </div>
   )
 }

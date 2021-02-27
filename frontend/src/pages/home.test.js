@@ -1,12 +1,13 @@
-import React, {useEffect} from 'react'
+import React from 'react'
 
 import Home from "./home";
-import { act } from 'react-dom/test-utils'
-import {mount} from "enzyme";
-import Enzyme from 'enzyme';
+import {act} from 'react-dom/test-utils'
+import Enzyme, {mount} from "enzyme";
 import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
 import MaterialTable from "material-table";
 import axios from "axios";
+import Table from "../components/table";
+
 const _ = require("lodash")
 
 Enzyme.configure({adapter: new Adapter()});
@@ -41,29 +42,40 @@ const mockData = [
 ];
 
 describe('when testing home', () => {
-  it('should initialize the datatable', () => {
-    expect(true).toBe(true)
+
+  it('should render the datable data with the table coming from backend', async () => {
+    const mockAxios = jest.fn().mockImplementation(() => Promise.resolve({data: mockData}))
+    axios.get = mockAxios
     const wrapper = mount(<Home/>)
 
-    let columns = wrapper.find(MaterialTable).props().columns;
-    let columnsFiltered = columns.map(column => _.pick(column, ['title', 'field', 'type']));
+    await (waitForComponentToPaint(wrapper))
 
-    expect(columnsFiltered).toEqual([
-        {title: 'Id', field: 'id', type: 'numeric'},
-        {title: 'Name', field: 'name'},
-        {title: 'Code', field: 'code'},
-        {title: 'Opening Date', field: 'openingDate', type: "date"},
-        {title: 'Special field 1', field: 'specialField1'},
-        {title: 'Special field 2', field: 'specialField2'}
-      ])
+    expect(mockAxios).toHaveBeenCalledWith('/stores')
+    expect(wrapper.find(Table).prop("data")).toBe(mockData)
   })
-
-  it('should render the datable data as data incoming from the props', async () => {
-    axios.get.mockImplementation(() => Promise.resolve({data: mockData}))
-    const wrapper = mount(<Home/>)
-
-    await(waitForComponentToPaint(wrapper))
-
-    expect(wrapper.find(MaterialTable).prop("data")).toBe(mockData)
-  })
+  //
+  // it('should be able to only edit the name and request the change to the backend', async () => {
+  //   const mockAxios = jest.fn()
+  //   mockAxios.mockImplementation(() => Promise.resolve({data: mockData}))
+  //   const datatable = mount(<Home/>).find(Table)
+  //
+  //   await (waitForComponentToPaint(datatable))
+  //   datatable.prop('cellEditable').onCellEditApproved('new name', 'old name', {
+  //     "id": 1,
+  //     "code": "code1",
+  //     "description": "desc1",
+  //     "name": "nam1",
+  //     "openingDate": "2021-02-07",
+  //     "specialField1": "",
+  //     "specialField2": "sp1"
+  //   })
+  //
+  //   expect(mockAxios).toHaveBeenCalledWith({
+  //     url: '/update_store_name/1',
+  //     method: 'put',
+  //     data: {
+  //       newName: 'new name'
+  //     }
+  //   })
+  // })
 })
