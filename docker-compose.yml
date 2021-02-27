@@ -11,19 +11,20 @@ services:
   api:
     build:
       context: ./backend
-      network: host
     ports:
     - "7000:7000"
     environment:
       API_KEY: 76a325g7g2ahs7h4673aa25s47632h5362a4532642
       DB_PORT: 5432
       DB_HOST: db
-    links:
+    depends_on:
       - db
   web:
     build: ./frontend
     ports:
       - "8080:8080"
+    depends_on:
+      - api
 
 
 
