@@ -3,8 +3,10 @@ package api
 import database.Repository
 import entities.Store
 import io.javalin.Javalin
+import io.javalin.plugin.json.JavalinJson
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.eclipse.jetty.http.HttpStatus
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
@@ -19,7 +21,7 @@ import java.sql.SQLException
 import java.time.LocalDate
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class GetStoresHandlerTest {
+internal class UpdateStoreHandlerTest {
     private lateinit var mockServer: Javalin
 
     private val repo = mockk<Repository>(relaxed = true)
@@ -28,7 +30,7 @@ internal class GetStoresHandlerTest {
     @Suppress("unused")
     fun setup() {
         mockServer = Javalin.create()
-            .get("/", GetStoresHandler(repo))
+            .put("/:id", UpdateStoreHandler(repo))
             .start(1234)
     }
 
@@ -38,31 +40,24 @@ internal class GetStoresHandlerTest {
         mockServer.stop()
     }
 
-
     @Test
-    fun `should return the stores data in the repo`() {
-        val repoStores = listOf(
-            Store(1, name = "Store 1"),
-            Store(2, name = "Store 2", openingDate = LocalDate.of(2021, 1, 1)),
-            Store(3, name = "Store 3"),
-            Store(4, name = "Store 4"),
-        )
-        every { repo.getStores() } returns repoStores
-
-        val response = HttpClient.newHttpClient().send(
-            HttpRequest.newBuilder().GET().uri(URI("http://localhost:1234")).build(),
+    fun `should update a store in the repo`() {
+        HttpClient.newHttpClient().send(
+            HttpRequest.newBuilder().PUT(HttpRequest.BodyPublishers.ofString("""{"newValue":"al capone"}"""))
+                .uri(URI("http://localhost:1234/1")).build(),
             HttpResponse.BodyHandlers.ofString()
         )
-
-        assertEquals(response.body(), "[{\"id\":1,\"name\":\"Store 1\"},{\"id\":2,\"name\":\"Store 2\",\"openingDate\":\"2021-01-01\"},{\"id\":3,\"name\":\"Store 3\"},{\"id\":4,\"name\":\"Store 4\"}]")
+        verify { repo.updateStoreName(1, "al capone") }
     }
+
 
     @Test
     fun `should return 500 when repo throws`() {
-        every { repo.getStores() } throws SQLException("Hoje não dá")
+        every { repo.updateStoreName(1, "al capone") } throws SQLException("Hoje não dá")
 
         val response = HttpClient.newHttpClient().send(
-            HttpRequest.newBuilder().GET().uri(URI("http://localhost:1234")).build(),
+            HttpRequest.newBuilder().PUT(HttpRequest.BodyPublishers.ofString("""{"newValue":"al capone"}"""))
+                .uri(URI("http://localhost:1234/1")).build(),
             HttpResponse.BodyHandlers.ofString()
         )
 

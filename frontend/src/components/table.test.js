@@ -7,7 +7,7 @@ import {act} from "react-dom/test-utils";
 import Adapter from "@wojtekmaj/enzyme-adapter-react-17";
 import Table from "./table";
 
-const _ = require("lodash")
+import {pick} from 'lodash'
 
 Enzyme.configure({adapter: new Adapter()});
 
@@ -42,7 +42,7 @@ const mockData = [
 describe('when rendering the datatable', () => {
   it('should initialize it', () => {
     const datatable = mount(<Table/>).find(MaterialTable)
-    let titleFieldTypeColumns = datatable.props().columns.map(column => _.pick(column, ['title', 'field', 'type']));
+    let titleFieldTypeColumns = datatable.props().columns.map(column => pick(column, ['title', 'field', 'type']));
 
     expect(titleFieldTypeColumns).toEqual([
       {title: 'Id', field: 'id', type: 'numeric'},
@@ -66,8 +66,9 @@ describe('when rendering the datatable', () => {
   })
 
   it('should be able to only edit the name', async () => {
-    const datatable = mount(<Table/>).find(MaterialTable)
-    let titleFieldTypeColumns = datatable.props().columns.map(column => _.pick(column, ['title', 'editable']));
+    const mockOnNameChange = jest.fn()
+    const datatable = mount(<Table onNameChange={mockOnNameChange}/>).find(MaterialTable)
+    let titleFieldTypeColumns = datatable.props().columns.map(column => pick(column, ['title', 'editable']));
 
     datatable.prop('cellEditable').onCellEditApproved('new name', 'old name', {
       "id": 1,
@@ -77,17 +78,17 @@ describe('when rendering the datatable', () => {
       "openingDate": "2021-02-07",
       "specialField1": "",
       "specialField2": "sp1"
-    })
+    }, 'column def')
 
-    expect(titleFieldTypeColumns).toEqual([
-      {title: 'Id', editable: 'never'},
-      {title: 'Name'},
-      {title: 'Code', editable: 'never'},
-      {title: 'Description', editable: 'never'},
-      {title: 'Opening Date', editable: 'never'},
-      {title: 'Special field 1', editable: 'never'},
-      {title: 'Special field 2', editable: 'never'}
-    ])
+    expect(mockOnNameChange).toHaveBeenCalledWith({
+      "id": 1,
+      "code": "code1",
+      "description": "desc1",
+      "name": "nam1",
+      "openingDate": "2021-02-07",
+      "specialField1": "",
+      "specialField2": "sp1"
+    }, 'new name')
   })
 
 })

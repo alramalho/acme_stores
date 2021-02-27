@@ -92,6 +92,17 @@ class PostgreRepositoryTest {
     }
 
     @Test
+    fun `should successfully update a store name`() {
+        val conn = DriverManager.getConnection("jdbc:pgsql://user:pass@localhost:3301/db")
+        conn.createStatement().execute("INSERT INTO store(id, name) VALUES (1, 'Store 1');")
+
+        repo.updateStoreName(1, "Al Capone")
+
+        assertEquals(listOf(Store(1,  name= "Al Capone")), repo.getStores())
+    }
+
+
+    @Test
     fun `should successfully import and return a list of seasons into the database`() {
         val seasons: List<Season> = listOf(
             Season(SeasonHalf.H1, Year.of(2021)),

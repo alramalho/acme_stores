@@ -1,9 +1,8 @@
 import React, {useEffect, useState} from 'react'
 import axios from "axios";
-import MaterialTable from "material-table";
-import {tableIcons} from "../utils/styles";
-import {TextField} from "@material-ui/core";
 import Table from "../components/table";
+
+import {cloneDeep} from 'lodash'
 
 const Home = () => {
   const [data, setData] = useState([])
@@ -14,14 +13,25 @@ const Home = () => {
     })
   }, [])
 
-  // const updateStoreName = (storeId) => axios({
-  //   method: 'put',
-  //   url: '/update_store_name/'
-  // })
+  const handleNameChange = (entry, newName) =>
+    axios.put(`/update_store_name/${entry.id}`, {
+      newName: newName
+    }).then(() => {
+      const entryIndex = data.findIndex((elem) => elem.id === entry.id)
+      const newData = cloneDeep(data)
+      newData[entryIndex] = {...entry, name: newName}
+      setData(newData)
+    })
+
+  useEffect(() => {
+    console.log('DATA CHANGED')
+    console.log(data ? data[0] : null)
+  }, [data])
+
 
   return (
     <div style={{padding: '5%'}} data-testid="wrapper">
-      <Table data={data}/>
+      <Table data={data} onNameChange={handleNameChange}/>
     </div>
   )
 }

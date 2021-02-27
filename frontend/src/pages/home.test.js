@@ -4,11 +4,8 @@ import Home from "./home";
 import {act} from 'react-dom/test-utils'
 import Enzyme, {mount} from "enzyme";
 import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
-import MaterialTable from "material-table";
 import axios from "axios";
 import Table from "../components/table";
-
-const _ = require("lodash")
 
 Enzyme.configure({adapter: new Adapter()});
 
@@ -53,29 +50,47 @@ describe('when testing home', () => {
     expect(mockAxios).toHaveBeenCalledWith('/stores')
     expect(wrapper.find(Table).prop("data")).toBe(mockData)
   })
-  //
-  // it('should be able to only edit the name and request the change to the backend', async () => {
-  //   const mockAxios = jest.fn()
-  //   mockAxios.mockImplementation(() => Promise.resolve({data: mockData}))
-  //   const datatable = mount(<Home/>).find(Table)
-  //
-  //   await (waitForComponentToPaint(datatable))
-  //   datatable.prop('cellEditable').onCellEditApproved('new name', 'old name', {
-  //     "id": 1,
-  //     "code": "code1",
-  //     "description": "desc1",
-  //     "name": "nam1",
-  //     "openingDate": "2021-02-07",
-  //     "specialField1": "",
-  //     "specialField2": "sp1"
-  //   })
-  //
-  //   expect(mockAxios).toHaveBeenCalledWith({
-  //     url: '/update_store_name/1',
-  //     method: 'put',
-  //     data: {
-  //       newName: 'new name'
-  //     }
-  //   })
-  // })
+
+  it('should be able to only edit the name and request the change to the backend', async () => {
+    const newData = [
+      {
+        "id": 1,
+        "code": "code1",
+        "description": "desc1",
+        "name": "al capone",
+        "openingDate": "2021-02-07",
+        "specialField1": "",
+        "specialField2": "sp1"
+      },
+      {
+        "id": 2,
+        "code": "code2",
+        "name": "nam2",
+        "openingDate": "2021-02-08",
+        "specialField1": "sp2",
+        "specialField2": ""
+      },
+    ];
+    axios.get.mockImplementation(() => Promise.resolve({data: mockData}))
+    axios.put.mockImplementation(() => Promise.resolve({data: newData}))
+    const wrapper = mount(<Home/>)
+    await (waitForComponentToPaint(wrapper))
+
+    await wrapper.find(Table).props().onNameChange({
+      "id": 1,
+      "code": "code1",
+      "description": "desc1",
+      "name": "al capone",
+      "openingDate": "2021-02-07",
+      "specialField1": "",
+      "specialField2": "sp1"
+    }, 'al capone')
+
+    await (waitForComponentToPaint(wrapper))
+
+    expect(axios.put).toHaveBeenCalledWith('/update_store_name/1', {
+      newName: 'al capone'
+    })
+    expect(wrapper.find(Table).props().data.map(elem => elem.name)).toContainEqual('al capone')
+  })
 })

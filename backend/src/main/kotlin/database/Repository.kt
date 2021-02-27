@@ -7,6 +7,7 @@ interface Repository {
     fun importStores(stores: List<Store>)
     fun getStores(): List<Store>
     fun updateStores(stores: List<Store>)
+    fun updateStoreName(storeId: Long, newName: String)
 
     fun importSeasons(seasons: List<Season>)
     fun getSeasons(): List<Season>

@@ -2,7 +2,7 @@ import React from 'react'
 import {tableIcons} from "../utils/styles";
 import MaterialTable from "material-table";
 
-const Table = ({data}) => {
+const Table = ({data, onNameChange}) => {
   return (
     <MaterialTable
       icons={tableIcons}
@@ -38,15 +38,7 @@ const Table = ({data}) => {
       }}
       data={data}
       cellEditable={{
-        onCellEditApproved: (newValue, oldValue, rowData, columnDef) => {
-          return new Promise((resolve, reject) => {
-            console.log('newValue: ' + newValue);
-            console.log('oldValue: ' + oldValue);
-            console.log(rowData);
-            console.log(columnDef);
-            setTimeout(resolve, 1000);
-          });
-        }
+        onCellEditApproved: (newValue, oldValue, rowData, columnDef) => onNameChange(rowData, newValue)
       }}
       detailPanel={[
         {

@@ -1,6 +1,7 @@
 import adapters.StoresGateway
 import api.GetStoresHandler
 import api.ImportHandler
+import api.UpdateStoreHandler
 import config.Config
 import database.Repository
 import io.javalin.Javalin
@@ -26,6 +27,7 @@ class WebApp(
         }
         .get("/import", ImportHandler(storesGateway, repo))
         .get("/stores", GetStoresHandler(repo))
+        .put("/update_store_name/:id", UpdateStoreHandler(repo))
 
     fun start() {
         app.start(port)

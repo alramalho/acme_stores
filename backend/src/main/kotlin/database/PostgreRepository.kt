@@ -3,7 +3,6 @@ package database
 import entities.Season
 import entities.SeasonHalf.Companion.toSeasonHalf
 import entities.Store
-import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.`java-time`.date
 import org.jetbrains.exposed.sql.transactions.TransactionManager
@@ -12,7 +11,7 @@ import java.sql.SQLException
 import java.time.Year
 
 class PostgreRepository(private val database: Database) : Repository {
-    private object StoreSchema : Table("store") {
+    private object StoreTable : Table("store") {
         val id = long("id")
         val code = varchar("code", 3000).nullable()
         val description = varchar("description", 3000).nullable()
@@ -25,48 +24,48 @@ class PostgreRepository(private val database: Database) : Repository {
         override val primaryKey = PrimaryKey(id)
     }
 
-    private object SeasonSchema : Table("season") {
+    private object SeasonTable : Table("season") {
         val half = varchar("half", 2)
         val year = integer("year")
         override val primaryKey = PrimaryKey(half, year)
     }
 
-    private object StoreSeasonSchema : Table("stores_seasons") {
-        val storeId = long("storeId").references(StoreSchema.id, onDelete = ReferenceOption.CASCADE)
+    private object StoreSeasonTable : Table("stores_seasons") {
+        val storeId = long("storeId").references(StoreTable.id, onDelete = ReferenceOption.CASCADE)
         val half = varchar("half", 2)
         val year = integer("year")
 
     }
 
     override fun importStores(stores: List<Store>): Unit = transaction(database) {
-        StoreSchema.batchInsert(stores) { store ->
-            this[StoreSchema.id] = store.id
-            this[StoreSchema.code] = store.code
-            this[StoreSchema.description] = store.description
-            this[StoreSchema.name] = store.name
-            this[StoreSchema.openingDate] = store.openingDate
-            this[StoreSchema.storeType] = store.storeType
+        StoreTable.batchInsert(stores) { store ->
+            this[StoreTable.id] = store.id
+            this[StoreTable.code] = store.code
+            this[StoreTable.description] = store.description
+            this[StoreTable.name] = store.name
+            this[StoreTable.openingDate] = store.openingDate
+            this[StoreTable.storeType] = store.storeType
         }
     }
 
     override fun getStores() = transaction(database) {
-        StoreSchema.selectAll().map {
+        StoreTable.selectAll().map {
             Store(
-                id = it[StoreSchema.id],
-                code = it[StoreSchema.code],
-                description = it[StoreSchema.description],
-                name = it[StoreSchema.name],
-                openingDate = it[StoreSchema.openingDate],
-                storeType = it[StoreSchema.storeType],
-                specialField1 = it[StoreSchema.specialField1],
-                specialField2 = it[StoreSchema.specialField2],
+                id = it[StoreTable.id],
+                code = it[StoreTable.code],
+                description = it[StoreTable.description],
+                name = it[StoreTable.name],
+                openingDate = it[StoreTable.openingDate],
+                storeType = it[StoreTable.storeType],
+                specialField1 = it[StoreTable.specialField1],
+                specialField2 = it[StoreTable.specialField2],
             )
         }
     }
 
     override fun updateStores(stores: List<Store>): Unit = transaction(database) {
         for (store in stores) {
-            StoreSchema.update({ StoreSchema.id eq store.id }) {
+            StoreTable.update({ StoreTable.id eq store.id }) {
                 it[id] = store.id
                 it[code] = store.code
                 it[description] = store.description
@@ -79,25 +78,31 @@ class PostgreRepository(private val database: Database) : Repository {
         }
     }
 
+    override fun updateStoreName(storeId: Long, newName: String): Unit = transaction(database) {
+        StoreTable.update({ StoreTable.id eq storeId }) {
+            it[name] = newName
+        }
+    }
+
     override fun importSeasons(seasons: List<Season>): Unit = transaction(database) {
-        SeasonSchema.batchInsert(seasons) { season ->
-            this[SeasonSchema.half] = season.half.toString()
-            this[SeasonSchema.year] = season.year.value
+        SeasonTable.batchInsert(seasons) { season ->
+            this[SeasonTable.half] = season.half.toString()
+            this[SeasonTable.year] = season.year.value
         }
     }
 
     override fun getSeasons(): List<Season> = transaction(database) {
-        SeasonSchema.selectAll().map {
+        SeasonTable.selectAll().map {
             Season(
-                half = it[SeasonSchema.half].toSeasonHalf(),
-                year = Year.of(it[SeasonSchema.year])
+                half = it[SeasonTable.half].toSeasonHalf(),
+                year = Year.of(it[SeasonTable.year])
             )
         }
     }
 
     override fun updateSeasons(seasons: List<Season>): Unit = transaction(database) {
         for (season in seasons) {
-            SeasonSchema.update({ (SeasonSchema.half eq season.half.toString()) and (SeasonSchema.year eq season.year.value) }) {
+            SeasonTable.update({ (SeasonTable.half eq season.half.toString()) and (SeasonTable.year eq season.year.value) }) {
                 it[half] = season.half.toString()
                 it[year] = season.year.value
             }
@@ -108,7 +113,7 @@ class PostgreRepository(private val database: Database) : Repository {
         for ((id, season) in map) {
             try {
                 transaction(database) {
-                    StoreSeasonSchema.insert {
+                    StoreSeasonTable.insert {
                         it[storeId] = id
                         it[half] = season.half.toString()
                         it[year] = season.year.value
@@ -126,13 +131,13 @@ class PostgreRepository(private val database: Database) : Repository {
 
     override fun getStoreSeasons(): List<Pair<Long, Season>> = transaction(database) {
         val result = mutableListOf<Pair<Long, Season>>()
-        StoreSeasonSchema.selectAll().map {
+        StoreSeasonTable.selectAll().map {
             result.add(
                 Pair(
-                    it[StoreSeasonSchema.storeId],
+                    it[StoreSeasonTable.storeId],
                     Season(
-                        half = it[StoreSeasonSchema.half].toSeasonHalf(),
-                        year = Year.of(it[StoreSeasonSchema.year])
+                        half = it[StoreSeasonTable.half].toSeasonHalf(),
+                        year = Year.of(it[StoreSeasonTable.year])
                     )
                 )
             )
@@ -141,14 +146,14 @@ class PostgreRepository(private val database: Database) : Repository {
     }
 
     override fun deleteAll(): Unit = transaction(database) {
-        StoreSchema.deleteAll()
-        SeasonSchema.deleteAll()
-        StoreSeasonSchema.deleteAll()
+        StoreTable.deleteAll()
+        SeasonTable.deleteAll()
+        StoreSeasonTable.deleteAll()
     }
 
     fun updateSchema() {
         transaction(database) {
-            SchemaUtils.createMissingTablesAndColumns(StoreSchema, SeasonSchema, StoreSeasonSchema)
+            SchemaUtils.createMissingTablesAndColumns(StoreTable, SeasonTable, StoreSeasonTable)
 
             TransactionManager.current()
                 .exec("""ALTER TABLE stores_seasons DROP CONSTRAINT IF EXISTS fk_stores_seasons;""")
