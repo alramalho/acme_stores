@@ -43,7 +43,7 @@ internal class UpdateStoreHandlerTest {
     @Test
     fun `should update a store in the repo`() {
         HttpClient.newHttpClient().send(
-            HttpRequest.newBuilder().PUT(HttpRequest.BodyPublishers.ofString("""{"newValue":"al capone"}"""))
+            HttpRequest.newBuilder().PUT(HttpRequest.BodyPublishers.ofString("""{"newName":"al capone"}"""))
                 .uri(URI("http://localhost:1234/1")).build(),
             HttpResponse.BodyHandlers.ofString()
         )
