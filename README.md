@@ -7,8 +7,12 @@ Go to the root of the project and run
 docker-compose up
 ```
 
+Please make sure you have `docker` and `docker-compose` installed.
+
 The frontend app will be accessible through `localhost:8080` and the backend app through `localhost:7000`
 
+As soon as you start it backend will start the async job of importing information. This may take a few seconds 
+before its visible in the frontend. (<1min)
 
 ### Design decisions
 - No "hard" documentation
@@ -22,7 +26,7 @@ The frontend app will be accessible through `localhost:8080` and the backend app
       wanted to get more experienced with it, I've decided to go for it
 - Exposed API Key, database user and password
     - I understood that security was not part of the evaluation criteria. 
-- All stores fields nullable except id and name. Was following the KISS and lean principle,
+- All stores fields nullable except id add name. Was following the KISS and lean principle,
   since the id was the identifier it couldn't be null, and name was editable, I figured it made sense
   not to allow it to be null.
 - Store `code` size of 1500
@@ -30,6 +34,9 @@ The frontend app will be accessible through `localhost:8080` and the backend app
 - CronJob as coroutine
   - I started by doing the cronjob as a separate application, running parallelly to the webapp. I feel like this also works,
   but coroutines and meant to be lightweight, and a routine on a global scope seemed like the leanest way to go.
+- Explicit wait on API before launching. 
+  - API was being too fast to boot up and would fail before DB was up. Since docker had no predefined way to deal with 
+  this I went with a small explicit await that should be enough to solve all this problems.
 ### Possible optimizations
 
 - Use yarn instead of npm in docker compose, faster boot times

@@ -1,5 +1,9 @@
 version: "3.6"
 services:
+  web:
+    build: ./frontend
+    ports:
+      - "8080:8080"
   db:
     image: "postgres:latest"
     ports:
@@ -9,6 +13,7 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_USER: admin
   api:
+    command: ['./wait-a-bit.sh']
     build:
       context: ./backend
     ports:
@@ -19,12 +24,6 @@ services:
       DB_HOST: db
     depends_on:
       - db
-  web:
-    build: ./frontend
-    ports:
-      - "8080:8080"
-    depends_on:
-      - api
 
 
 
