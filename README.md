@@ -1,7 +1,7 @@
 # ACME Corporation – [Alexandre Ramalho](https://alramalho.com)
 <sup>Challenged by software angels</sup>
 
-### Running
+## Running
 Go to the root of the project and run
 ```
 docker-compose up
@@ -14,7 +14,22 @@ The frontend app will be accessible through `localhost:8080` and the backend app
 As soon as you start it backend will start the async job of importing information. This may take a few seconds 
 before its visible in the frontend. (<1min)
 
-### Design decisions
+## Methodology
+- Agile, tried to follow full stack story approach
+- TDD
+- Lean & KISS
+- Clean architeture
+
+## Guidelines
+
+#### Downloading CSV:
+![img.png](assets/img.png)
+
+#### Editing name:
+![img_1.png](assets/img_1.png)
+
+
+## Design decisions
 - No "hard" documentation
   - Tests should be the only documentation, "hard" documentation is one more thing that
     can get outdated and needs active effort to be kept up to date. If testes are
@@ -37,7 +52,8 @@ before its visible in the frontend. (<1min)
 - Explicit wait on API before launching. 
   - API was being too fast to boot up and would fail before DB was up. Since docker had no predefined way to deal with 
   this I went with a small explicit await that should be enough to solve all this problems.
-### Possible optimizations
+    
+## Possible optimizations
 
 - Use yarn instead of npm in docker compose, faster boot times
 - Silence warnings when running backend
