@@ -29,7 +29,9 @@ The frontend app will be accessible through `localhost:8080` and the backend app
   not to allow it to be null.
 - Store `code` size of 1500
   - Nothing was specified in the API regarding special treatment on `code` parameter, therefore no spaces were trailed.
-
+- CronJob as coroutine
+  - I started by doing the cronjob as a separate application, running parallelly to the webapp. I feel like this also works,
+  but coroutines and meant to be lightweight, and a routine on a global scope seemed like the leanest way to go.
 ### Possible optimizations
 
 - Use yarn instead of npm in docker compose, faster boot times

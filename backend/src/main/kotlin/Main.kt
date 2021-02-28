@@ -1,4 +1,3 @@
-import adapters.StoresGateway
 import api.GetStoresHandler
 import api.ImportHandler
 import api.UpdateStoreHandler
@@ -6,6 +5,9 @@ import api.usecases.ImportData
 import config.Config
 import database.Repository
 import io.javalin.Javalin
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 fun main() {
     with(Config) {
@@ -14,6 +16,14 @@ fun main() {
             repo = repository,
             importUseCase = importUseCase,
         ).start()
+
+        GlobalScope.launch {
+            while(true) {
+                println("\nImporting data...\n")
+                importUseCase.invoke()
+                delay(3_600_000)
+            }
+        }
     }
 }
 

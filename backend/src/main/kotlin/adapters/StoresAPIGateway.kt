@@ -34,7 +34,7 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
             for (attempt in 1..MAX_ATTEMPTS) {
                 storesFromApi = (httpClient.send(request.build(), ofString()).run {
                     if (this.statusCode() != HttpStatus.OK_200 && attempt == MAX_ATTEMPTS) {
-                        print("Stores endpoint failed 5 consecutive times in page $pageQuerier")
+                        print("Only imported until page $pageQuerier. Stores API responded with 500 5 times in a row.")
                         return stores
                     }
                     objectMapper.readTree(this.body()).toStores()
