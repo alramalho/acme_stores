@@ -100,35 +100,6 @@ class StoresAPIGatewayTest {
         }
 
         @Test
-        @Timeout(value = 7, unit = TimeUnit.SECONDS)
-        fun `should returned the gathered stores so far when api doesn't return 200 5 times in a row `() {
-            var counter = 0
-            mockApi = Javalin.create().start(1234)
-                .get("/v1/stores/") {
-                    when (it.queryParam("page")) {
-                        "0" -> it.json(listOf(mapOf("id" to 0, "name" to "Store 0")))
-                        "1" -> it.json(listOf(mapOf("id" to 1, "name" to "Store 1")))
-                        "2" -> it.json(listOf(mapOf("id" to 2, "name" to "Store 2")))
-                        "3" -> {
-                            it.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
-                            counter++
-                        }
-                        else -> it.json(listOf(mapOf("id" to 1337, "name" to "Store 1337")))
-                    }
-                }
-
-            val stores = gateway.getStores()
-            assertEquals(5, counter)
-            assertEquals(
-                listOf(
-                    Store(id = 0, name = "Store 0"),
-                    Store(id = 1, name = "Store 1"),
-                    Store(id = 2, name = "Store 2"),
-                ), stores
-            )
-        }
-
-        @Test
         @Timeout(value = 5, unit = TimeUnit.SECONDS)
         fun `should query all pages until api returns empty list`() {
             val queryParams = mutableListOf<String>()
@@ -157,6 +128,36 @@ class StoresAPIGatewayTest {
             assertTrue(queryParams.containsAll(listOf("1", "2", "3", "4")))
         }
 
+        @Test
+        @Timeout(value = 7, unit = TimeUnit.SECONDS)
+        fun `should not fetch the page for that the api doesn't return 200 5 times in a row `() {
+            var counter = 0
+            mockApi = Javalin.create().start(1234)
+                .get("/v1/stores/") {
+                    when (it.queryParam("page")) {
+                        "0" -> it.json(listOf(mapOf("id" to 0, "name" to "Store 0")))
+                        "1" -> it.json(listOf(mapOf("id" to 1, "name" to "Store 1")))
+                        "2" -> it.json(listOf(mapOf("id" to 2, "name" to "Store 2")))
+                        "3" -> {
+                            it.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
+                            counter++
+                        }
+                        "4" -> it.json(listOf(mapOf("id" to 4, "name" to "Store 4")))
+                        else -> it.json(emptyList<String>())
+                    }
+                }
+
+            val stores = gateway.getStores()
+            assertEquals(5, counter)
+            assertEquals(
+                listOf(
+                    Store(id = 0, name = "Store 0"),
+                    Store(id = 1, name = "Store 1"),
+                    Store(id = 2, name = "Store 2"),
+                    Store(id = 4, name = "Store 4"),
+                ), stores
+            )
+        }
     }
 
     @Nested

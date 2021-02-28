@@ -1,5 +1,7 @@
 package adapters
 
+import adapters.StoresAPIGateway.GetStoresResult.Failure
+import adapters.StoresAPIGateway.GetStoresResult.Success
 import entities.toSeason
 import com.fasterxml.jackson.databind.JsonNode
 import entities.Store
@@ -13,7 +15,7 @@ import org.eclipse.jetty.http.HttpStatus
 import java.net.http.HttpResponse.BodyHandlers.ofString
 import java.time.LocalDate
 
-class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) : StoresGateway {
+class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) {
     companion object {
         private const val MAX_ATTEMPTS = 5
     }
@@ -21,33 +23,47 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
     private val httpClient: HttpClient = HttpClient.newHttpClient()
     private val objectMapper = ObjectMapper()
 
-    override fun getStores(): List<Store> {
-        var pageQuerier = 0
-        val stores = mutableListOf<Store>()
-        var storesFromApi = listOf<Store>()
-
-        while (storesFromApi.isNotEmpty() || pageQuerier == 0) {
-            val request = newBuilder().GET()
-                .header("apiKey", apiKey)
-                .uri(URI("$apiUrl/v1/stores/?page=$pageQuerier"))
-
-            for (attempt in 1..MAX_ATTEMPTS) {
-                storesFromApi = (httpClient.send(request.build(), ofString()).run {
-                    if (this.statusCode() != HttpStatus.OK_200 && attempt == MAX_ATTEMPTS) {
-                        print("Only imported until page $pageQuerier. Stores API responded with 500 5 times in a row.")
-                        return stores
+    fun getStores(page: Int = 0): List<Store> {
+        val list = mutableListOf<Store>()
+        for(attempt in 1..MAX_ATTEMPTS) {
+            when (val result = requestStores(page)) {
+                is Success -> {
+                    if (result.stores.isNotEmpty()) {
+                        list.addAll(result.stores)
+                        list.addAll(getStores(page + 1))
                     }
-                    objectMapper.readTree(this.body()).toStores()
-                })
+                    break
+                }
+                is Failure -> {
+                    if (attempt == MAX_ATTEMPTS) {
+                        list.addAll(getStores(page + 1))
+                        break
+                    }
+                }
             }
-            stores.addAll(storesFromApi)
-
-            pageQuerier += 1
         }
-        return stores
+        return list
     }
 
-    override fun getStoresAndSeasons(): List<Pair<Long, Season>> {
+    private fun requestStores(page: Int = 0): GetStoresResult {
+        val request = newBuilder().GET()
+            .header("apiKey", apiKey)
+            .uri(URI("$apiUrl/v1/stores/?page=$page"))
+
+        httpClient.send(request.build(), ofString()).run {
+            if (statusCode() != HttpStatus.OK_200) {
+                return Failure
+            }
+            return Success(objectMapper.readTree(body()).toStores())
+        }
+    }
+
+    sealed class GetStoresResult {
+        class Success(val stores: List<Store>) : GetStoresResult()
+        object Failure : GetStoresResult()
+    }
+
+    fun getStoresAndSeasons(): List<Pair<Long, Season>> {
         val request = newBuilder().GET()
             .uri(URI("$apiUrl/other/stores_and_seasons"))
             .header("apiKey", apiKey)
@@ -56,7 +72,7 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
         for (attempt in 1..MAX_ATTEMPTS) {
             try {
                 return httpClient.send(request.build(), ofString()).run {
-                    check(this.statusCode() == HttpStatus.OK_200) { throw Exception() }
+                    require(this.statusCode() == HttpStatus.OK_200)
                     objectMapper.readTree(this.body()).toStoresAndSeasons()
                 }
             } catch (e: Exception) {
@@ -67,7 +83,7 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
         throw returnedException
     }
 
-    override fun getCSV(): List<Map<String, String>> {
+    fun getCSV(): List<Map<String, String>> {
         val request = newBuilder().GET()
             .uri(URI("$apiUrl/extra_data.csv"))
             .header("apiKey", apiKey)
@@ -87,59 +103,40 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
         throw returnedException
     }
 
-    private fun JsonNode.toStores(): List<Store> {
-        val list = mutableListOf<Store>()
-        for (store in this) {
-            try {
-                list.add(
-                    Store(
-                        id = store.get("id").asLong(),
-                        code = store.get("code")?.toTextOrNull(),
-                        description = store.get("description")?.toTextOrNull(),
-                        name = store.get("name").textValue(),
-                        openingDate = store.get("openingDate")?.toDateOrNull(),
-                        storeType = store.get("storeType")?.toTextOrNull(),
-                    )
-                )
-            } catch (e: Exception) {
-                continue
-            }
+    private fun JsonNode.toStores(): List<Store> =
+        filter { store ->
+            store.get("name") !== null &&
+                    !store.get("name").isNull &&
+                    store.get("id") !== null &&
+                    !store.get("id").isNull
+        }.map { store ->
+            Store(
+                id = store.get("id").asLong(),
+                code = store.get("code")?.toTextOrNull(),
+                description = store.get("description")?.toTextOrNull(),
+                name = store.get("name").textValue(),
+                openingDate = store.get("openingDate")?.toDateOrNull(),
+                storeType = store.get("storeType")?.toTextOrNull(),
+            )
         }
-        return list
-    }
 
     private fun JsonNode.toDateOrNull(): LocalDate? {
         require(!this.isNull) { return null }
-        return try {
-            LocalDate.parse(this.asText())
-        } catch (e: NullPointerException) {
-            null
-        }
+        return LocalDate.parse(this.textValue())
     }
 
     private fun JsonNode.toTextOrNull(): String? {
         require(!this.isNull) { return null }
-        return try {
-            this.asText()
-        } catch (e: NullPointerException) {
-            null
-        }
+        return this.textValue()
     }
 
-    private fun JsonNode.toStoresAndSeasons(): List<Pair<Long, Season>> {
-        val list = mutableListOf<Pair<Long, Season>>()
-        for (store in this) {
-            try {
-                require(store.get("storeId") !== null) { throw Exception() }
-                require(!store.get("storeId").isNull) { throw Exception() }
-                require(store.get("season") !== null) { throw Exception() }
-                require(!store.get("season").isNull) { throw Exception() }
-
-                list.add(Pair(store.get("storeId").asLong(), store.get("season").asText().toSeason()))
-            } catch (e: Exception) {
-                continue
-            }
+    private fun JsonNode.toStoresAndSeasons(): List<Pair<Long, Season>> =
+        filter {
+            it.get("storeId") !== null &&
+                    !it.get("storeId").isNull &&
+                    it.get("season") !== null &&
+                    !it.get("season").isNull
+        }.map {
+            Pair(it.get("storeId").asLong(), it.get("season").textValue().toSeason())
         }
-        return list
-    }
 }

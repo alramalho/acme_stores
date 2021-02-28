@@ -1,15 +1,15 @@
 package api.usecases
 
-import adapters.StoresGateway
+import adapters.StoresAPIGateway
 import database.Repository
 import entities.Season
 import entities.Store
 
 class ImportData(
-    private val gateway: StoresGateway,
+    private val gateway: StoresAPIGateway,
     private val repo: Repository
 ) {
-    fun invoke() {
+    operator fun invoke() {
         val storesFromApi: List<Store> = gateway.getStores()
         val existingStores: List<Store> = repo.getStores()
         val storesAndSeasonsFromApi: List<Pair<Long, Season>> = gateway.getStoresAndSeasons()

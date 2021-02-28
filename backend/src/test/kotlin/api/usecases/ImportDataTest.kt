@@ -1,24 +1,19 @@
 package api.usecases
 
-import adapters.StoresGateway
+import adapters.StoresAPIGateway
 import database.Repository
 import entities.Season
 import entities.SeasonHalf
 import entities.Store
-import io.javalin.Javalin
 import io.mockk.*
 import org.junit.jupiter.api.*
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.time.LocalDate
 import java.time.Year
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ImportDataTest {
     private val repo = mockk<Repository>(relaxed = true)
-    private val gateway = mockk<StoresGateway>(relaxed = true)
+    private val gateway = mockk<StoresAPIGateway>(relaxed = true)
     private val importUseCase = ImportData(gateway, repo)
 
     @AfterEach
@@ -49,7 +44,7 @@ class ImportDataTest {
         justRun { repo.importStores(any()) }
         justRun { repo.updateStores(any()) }
 
-        importUseCase.invoke()
+        importUseCase()
 
         verify(exactly = 1) {
             gateway.getStores()
@@ -76,7 +71,7 @@ class ImportDataTest {
         every { gateway.getStores() } returns storesFromAPI
         every { repo.getStores() } returns listOf(Store(id = 1, name = "Store 1"))
 
-        importUseCase.invoke()
+        importUseCase()
 
         verify(exactly = 1) {
             gateway.getStores()
@@ -107,7 +102,7 @@ class ImportDataTest {
         )
         every { gateway.getStoresAndSeasons() } returns gatewayStoresAndSeasons
 
-        importUseCase.invoke()
+        importUseCase()
 
         verify(exactly = 1) {
             gateway.getStoresAndSeasons()
@@ -130,7 +125,7 @@ class ImportDataTest {
         )
         every { gateway.getStoresAndSeasons() } returns gatewayStoresAndSeasons
 
-        importUseCase.invoke()
+        importUseCase()
 
         verify(exactly = 1) {
             gateway.getStoresAndSeasons()
@@ -150,7 +145,7 @@ class ImportDataTest {
         every { repo.getStores() } returns listOf()
 
         assertThrows<Exception> {
-            importUseCase.invoke()
+            importUseCase()
         }
 
         verify(exactly = 0) { repo.importSeasons(any()) }
@@ -185,7 +180,7 @@ class ImportDataTest {
             ),
         )
 
-        importUseCase.invoke()
+        importUseCase()
 
         verify(exactly = 1) {
             repo.updateStores(

@@ -121,7 +121,7 @@ class PostgreRepository(private val database: Database) : Repository {
                 }
             } catch (ex: SQLException) {
                 if (ex.cause?.message?.contains("fk_stores_seasons_storeid_id") == true) {
-                    print("Could not insert store season for Store id $id and season ${season.half} ${season.year} due to FK constraint. Will continue execution")
+                    println("Could not insert store season for Store id $id and season ${season.half} ${season.year} due to FK constraint. Will continue execution")
                 } else {
                     throw ex
                 }

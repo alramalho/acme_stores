@@ -6,7 +6,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import database.Repository
 import io.javalin.http.Context
 import io.javalin.http.Handler
-import org.eclipse.jetty.http.HttpStatus
 
 class GetStoresHandler(private val repo: Repository) : Handler {
 
@@ -18,12 +17,7 @@ class GetStoresHandler(private val repo: Repository) : Handler {
     }
 
     override fun handle(ctx: Context) {
-        try {
-            ctx.result(objectMapper.writeValueAsString(repo.getStores()))
-                .contentType("application/json")
-        } catch (e: Exception) {
-            ctx.status(HttpStatus.INTERNAL_SERVER_ERROR_500)
-            ctx.result(e.message.toString())
-        }
+        ctx.result(objectMapper.writeValueAsString(repo.getStores()))
+            .contentType("application/json")
     }
 }
