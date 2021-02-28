@@ -17,8 +17,9 @@ before its visible in the frontend. (<1min)
 ## Methodology
 - Agile, tried to follow full stack story approach
 - TDD
+- UX driven
 - Lean & KISS
-- Clean architeture
+- Clean architecture
 
 ## Guidelines
 
