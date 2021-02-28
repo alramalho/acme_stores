@@ -63,6 +63,10 @@ class StoresAPIGatewayTest {
                                 mapOf(
                                     "name" to "Store 6",
                                 ),
+                                mapOf(
+                                    "id" to 7,
+                                    "name" to null,
+                                ),
                             )
                         )
                         else -> it.json(emptyList<String>())
@@ -288,7 +292,7 @@ class StoresAPIGatewayTest {
         }
 
         @Test
-        fun `should attempt 5 times before failing`(){
+        fun `should attempt 5 times before failing`() {
             var counter = 0
             mockApi = Javalin.create().start(1234)
                 .get("/extra_data.csv") {

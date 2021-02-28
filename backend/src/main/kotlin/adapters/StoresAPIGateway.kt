@@ -96,7 +96,7 @@ class StoresAPIGateway(private val apiUrl: String, private val apiKey: String) :
                         id = store.get("id").asLong(),
                         code = store.get("code")?.toTextOrNull(),
                         description = store.get("description")?.toTextOrNull(),
-                        name = store.get("name").asText(),
+                        name = store.get("name").textValue(),
                         openingDate = store.get("openingDate")?.toDateOrNull(),
                         storeType = store.get("storeType")?.toTextOrNull(),
                     )
