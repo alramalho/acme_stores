@@ -14,6 +14,13 @@ let tableColumns = [
       <span>{rowData.description ? rowData.description.substr(1, 25).concat('...') : null}</span>
   },
   {title: 'Opening Date', field: 'openingDate', editable: 'never', type: "date"},
+  {
+    title: 'Seasons',
+    field: 'seasons',
+    editable: 'never',
+    render: rowData =>
+      <span>{rowData.seasons.map(season => `${season.half} ${season.year}`).join()}</span>
+  },
   {title: 'Special field 1', field: 'specialField1', editable: 'never'},
   {title: 'Special field 2', field: 'specialField2', editable: 'never'}
 ];

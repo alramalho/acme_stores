@@ -50,6 +50,7 @@ describe('when rendering the datatable', () => {
       {title: 'Code', field: 'code'},
       {title: 'Description', field: 'description'},
       {title: 'Opening Date', field: 'openingDate', type: "date"},
+      {title: 'Seasons', field: 'seasons'},
       {title: 'Special field 1', field: 'specialField1'},
       {title: 'Special field 2', field: 'specialField2'}
     ])
@@ -76,6 +77,7 @@ describe('when rendering the datatable', () => {
       "description": "desc1",
       "name": "nam1",
       "openingDate": "2021-02-07",
+      "seasons": [],
       "specialField1": "",
       "specialField2": "sp1"
     }, 'column def')
@@ -86,6 +88,7 @@ describe('when rendering the datatable', () => {
       "description": "desc1",
       "name": "nam1",
       "openingDate": "2021-02-07",
+      "seasons": [],
       "specialField1": "",
       "specialField2": "sp1"
     }, 'new name')

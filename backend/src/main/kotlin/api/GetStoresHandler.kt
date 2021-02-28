@@ -17,7 +17,13 @@ class GetStoresHandler(private val repo: Repository) : Handler {
     }
 
     override fun handle(ctx: Context) {
-        ctx.result(objectMapper.writeValueAsString(repo.getStores()))
-            .contentType("application/json")
+        val stores = repo.getStores()
+        val storesSeasons = repo.getStoreSeasons()
+        stores.map { store ->
+            store.seasons = storesSeasons
+                .filter { it.first == store.id }
+                .map { it.second }
+        }
+        ctx.result(objectMapper.writeValueAsString(stores)).contentType("application/json")
     }
 }

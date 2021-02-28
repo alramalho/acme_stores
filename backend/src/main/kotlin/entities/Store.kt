@@ -11,6 +11,7 @@ data class Store(
     val name: String,
     val openingDate: LocalDate? = null,
     val storeType: String? = null,
+    var seasons: List<Season>? = null,
     var specialField1: String? = null,
     var specialField2: String? = null
 ) {

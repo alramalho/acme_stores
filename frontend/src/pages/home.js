@@ -23,12 +23,6 @@ const Home = () => {
       setData(newData)
     })
 
-  useEffect(() => {
-    console.log('DATA CHANGED')
-    console.log(data ? data[0] : null)
-  }, [data])
-
-
   return (
     <div style={{padding: '5%'}} data-testid="wrapper">
       <Table data={data} onNameChange={handleNameChange}/>
