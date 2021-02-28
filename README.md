@@ -1,5 +1,5 @@
-# Software angels – Alexandre Ramalho
-Challenge of software angels, attemped by [alramalho](https://alramalho.com)*
+# ACME Corporation – [Alexandre Ramalho](https://alramalho.com)
+Challenged by software angels:
 
 <sup><sub><sub>*já agora faço publicidade</sub></sub><sup>
 
@@ -19,8 +19,8 @@ The frontend app will be accessible through `localhost:8080` and the backend app
     rightly written in a behaviour driven way, they will serve as documentation,
     giving live working examples of the code, while explaining them.
 - Relational database as PostgreSQL
-    - I kinda of feel this is an overkill, and thought about going with some simpler solutions,
-      such as JSON. Although, since I know it is used in the project I'm applying for, and since I
+    - I kinda of feel this is an overkill, and thought about going with some simpler solutions. 
+      Although, since I know it is used in the project I'm applying for, and since I
       wanted to get more experienced with it, I've decided to go for it
 - Exposed API Key, database user and password
     - I understood that security was not part of the evaluation criteria. 
