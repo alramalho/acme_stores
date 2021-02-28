@@ -1,7 +1,5 @@
 # ACME Corporation – [Alexandre Ramalho](https://alramalho.com)
-Challenged by software angels:
-
-<sup><sub><sub>*já agora faço publicidade</sub></sub><sup>
+<sup>Challenged by software angels</sup>
 
 ### Running
 Go to the root of the project and run
@@ -39,6 +37,4 @@ The frontend app will be accessible through `localhost:8080` and the backend app
 - Use Enum for season half instead of varchar in DB
 - Do not hardcode SQL code (to use FK of stores_seasons table). Related to [this issue](https://github.com/JetBrains/Exposed/issues/511)
 - Use more specific exceptions throughout the code
-- Only use one driver in repo tests
-  - Decision made to decrease delivery time.
 - Refactor CSV logic in the Handler, it doesn't read too well, and could be improved.
