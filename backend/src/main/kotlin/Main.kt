@@ -19,7 +19,6 @@ fun main() {
 
         GlobalScope.launch {
             while(true) {
-                println("\nImporting data...\n")
                 importUseCase()
                 delay(3_600_000)
             }

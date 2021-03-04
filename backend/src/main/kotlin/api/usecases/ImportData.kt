@@ -10,6 +10,8 @@ class ImportData(
     private val repo: Repository
 ) {
     operator fun invoke() {
+        println("Importing data...")
+
         val storesFromApi: List<Store> = gateway.getStores()
         val existingStores: List<Store> = repo.getStores()
         val storesAndSeasonsFromApi: List<Pair<Long, Season>> = gateway.getStoresAndSeasons()
@@ -65,5 +67,7 @@ class ImportData(
         repo.updateStores(storesToUpdate)
         repo.importSeasons(seasonsToImport)
         repo.importStoreSeasons(storeSeasonsToImport)
+
+        println("Import finished successfully. \nImported:\n${storesToImport.size} Stores\n${seasonsToImport.size} Seasons\n${storeSeasonsToImport.size} Season-Store relationships\nUpdated:\n${storesToUpdate.size} Stores\n")
     }
 }
